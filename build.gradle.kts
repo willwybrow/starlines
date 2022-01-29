@@ -16,6 +16,8 @@ repositories {
 
 val vertxVersion = "4.2.4"
 val junitJupiterVersion = "5.8.2"
+val neo4jCoreVersion = "3.2.28"
+val neo4jDriverVersion = "4.4.3"
 
 val mainVerticleName = "$group.web.MainVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
@@ -29,14 +31,15 @@ application {
 
 dependencies {
     implementation("org.projectlombok:lombok:1.18.22")
-    implementation("org.neo4j.driver:neo4j-java-driver:4.4.2")
-    implementation("org.neo4j:neo4j-ogm-core:3.2.28")
+    implementation("org.neo4j.driver:neo4j-java-driver:$neo4jDriverVersion")
+    implementation("org.neo4j:neo4j-ogm-core:$neo4jCoreVersion")
 
     implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
-    implementation("io.vertx:vertx-core")
+    implementation("io.vertx:vertx-core:$vertxVersion")
+    implementation("io.vertx:vertx-web:$vertxVersion")
 
-    runtimeOnly("org.neo4j:neo4j-ogm-bolt-driver:3.2.28")
-    runtimeOnly("org.neo4j:neo4j-ogm-bolt-native-types:3.2.28")
+    runtimeOnly("org.neo4j:neo4j-ogm-bolt-driver:$neo4jCoreVersion")
+    runtimeOnly("org.neo4j:neo4j-ogm-bolt-native-types:$neo4jCoreVersion")
 
     compileOnly("org.projectlombok:lombok:1.18.22")
     annotationProcessor("org.projectlombok:lombok:1.18.22")
@@ -45,6 +48,7 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.22")
 
     testImplementation("io.vertx:vertx-junit5")
+    testImplementation("org.neo4j.test:neo4j-harness:$neo4jDriverVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
@@ -70,5 +74,5 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-    args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
+    args = listOf("run", mainVerticleName, /* "--redeploy=$watchForChange",*/ "--launcher-class=$launcherClassName", /*"--on-redeploy=$doOnChange"*/)
 }

@@ -1,6 +1,8 @@
 package uk.wycor.starlines.persistence.neo4j;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.neo4j.ogm.model.Result;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
@@ -48,20 +50,32 @@ public class Neo4jGameRepository implements GameRepository {
         return player;
     }
 
+    @Override
     public Map<Star, List<Player>> getClusterControllers(int clusterID) {
-        @Data
-        class ControlResult {
-            StarEntity star;
-            List<PlayerEntity> controllingPlayers;
-            Integer numberOfProbes;
-        }
-        return StreamSupport.stream(session.query(ControlResult.class, """
+        Result result = session.query("""
                         MATCH (star:Star) WHERE star.clusterID = $clusterID\s
                         OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
                         WITH star, player, count(ship) AS playerProbes\s
                         WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
-                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID)).spliterator(), false)
-                .collect(Collectors.toMap(controlResult -> controlResult.star.toStar(), controlResult -> controlResult.controllingPlayers.stream().map(PlayerEntity::toPlayer).collect(Collectors.toList())));
+                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID));
+        return StreamSupport.stream(result.spliterator(), false)
+                .map(resultMap -> {
+                    StarEntity starEntity = (StarEntity) resultMap.get("star");
+                    try {
+                        return new ControlResult(starEntity, (List<PlayerEntity>) resultMap.get("controllingPlayers"), (Integer) resultMap.get("numberOfProbes"));
+                    } catch (ClassCastException e) {
+                        return new ControlResult(starEntity, Collections.emptyList(), 0);
+                    }
+                }).collect(Collectors.toMap(controlResult -> controlResult.star.toStar(), controlResult -> controlResult.controllingPlayers.stream().map(PlayerEntity::toPlayer).collect(Collectors.toList())));
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class ControlResult {
+        StarEntity star;
+        List<PlayerEntity> controllingPlayers;
+        Integer numberOfProbes;
     }
 
     public int populateNextStarfield(Map<Point, Star> starfield) {
