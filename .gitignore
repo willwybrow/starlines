@@ -32,4 +32,4 @@ build/
 hs_err_pid*
 
 # local files with secrets in, sorry
-src/main/resources/local-neo4j.properties
+local-neo4j.properties
