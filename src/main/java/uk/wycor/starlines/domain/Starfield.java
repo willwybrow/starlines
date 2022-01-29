@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static uk.wycor.starlines.domain.UniverseManager.MINIMUM_STAR_COUNT;
+
 public class Starfield {
 
     static final List<Point> ALL_POSSIBLE_CLUSTER_COORDINATES = IntStream
@@ -18,13 +20,13 @@ public class Starfield {
             .flatMap(p -> p)
             .toList();
 
-    private static Map<Point, Star> generateRandomStarfield(int clusterID) {
+    static Map<Point, Star> generateRandomStarfield() {
         Random random = new Random();
         var totalMassToDistribute = UniverseManager.MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
 
         while (totalMassToDistribute >= 0) {
-            var newStarMass = random.nextInt(UniverseManager.MASS_PER_NEW_CLUSTER / 2);
+            var newStarMass = random.nextInt(UniverseManager.MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT);
             newStarMasses.add(newStarMass);
             totalMassToDistribute -= newStarMass;
         }
@@ -37,6 +39,7 @@ public class Starfield {
                         i -> new Star(
                                 UUID.randomUUID(),
                                 randomPointsForNewStars.get(i),
+                                StarNameGenerator.randomName(),
                                 newStarMasses.get(i),
                                 (int) Math.round((float)newStarMasses.get(i) * 1.75))
                         )

@@ -13,12 +13,15 @@ public class Star extends GameObject {
 
     private final Point coordinate;
 
-    private int currentMass;
-    private int maximumMass;
+    private final String name;
 
-    public Star(UUID id, Point coordinate, int currentMass, int maximumMass) {
+    private final int currentMass;
+    private final int maximumMass;
+
+    public Star(UUID id, Point coordinate, String name, int currentMass, int maximumMass) {
         super(id);
         this.coordinate = coordinate;
+        this.name = name;
         this.currentMass = currentMass;
         this.maximumMass = maximumMass;
     }

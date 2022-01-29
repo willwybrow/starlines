@@ -12,7 +12,7 @@ import uk.wycor.starlines.domain.Player;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@NodeEntity
+@NodeEntity(label = "Player")
 @Builder
 public class PlayerEntity extends Entity {
     String name;

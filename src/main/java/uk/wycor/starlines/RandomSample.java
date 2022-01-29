@@ -9,6 +9,10 @@ public class RandomSample {
 
     public static final Random RANDOM = new Random();
 
+    public static <T> T pick(Iterable<T> items) {
+        return sample(items, 1).get(0);
+    }
+
     public static <T> List<T> sample(Iterable<T> items, int sampleSize) {
         ArrayList<T> reservoir = new ArrayList<T>(sampleSize);
         int count = 0;
