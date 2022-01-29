@@ -9,6 +9,8 @@ import org.neo4j.ogm.annotation.CompositeIndex;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.types.spatial.CartesianPoint2d;
+import uk.wycor.starlines.domain.Point;
+import uk.wycor.starlines.domain.Star;
 
 import java.util.Set;
 
@@ -28,5 +30,16 @@ public class StarEntity extends Entity {
 
     @Relationship(type = "LINKED_TO")
     Set<StarEntity> linkedTo;
+
+    public Star toStar() {
+        return new Star(
+                this.id,
+                new Point((int)this.coordinate.getX(),
+                        (int)this.coordinate.getY()),
+                this.name,
+                this.currentMass,
+                this.maximumMass
+        );
+    }
 }
 

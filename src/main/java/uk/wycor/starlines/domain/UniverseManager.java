@@ -2,6 +2,9 @@ package uk.wycor.starlines.domain;
 
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
+import java.util.UUID;
+import java.util.stream.Stream;
+
 public class UniverseManager {
     public static final int CLUSTER_SIZE = 8;
     public static final int MASS_PER_NEW_CLUSTER = CLUSTER_SIZE * 3;
@@ -20,7 +23,10 @@ public class UniverseManager {
     public static void main(String[] args) {
         UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
 
-        universeManager.expandUniverse();
+        Stream.of("Will", "Ben", "Sam", "Fran").forEach(name -> {
+            universeManager.expandUniverse();
+            universeManager.gameRepository.setUpNewPlayer(new Player(UUID.randomUUID(), name));
+        });
     }
 
 }
