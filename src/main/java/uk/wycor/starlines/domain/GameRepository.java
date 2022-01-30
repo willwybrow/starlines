@@ -1,5 +1,7 @@
 package uk.wycor.starlines.domain;
 
+import uk.wycor.starlines.domain.geometry.HexPoint;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,5 +10,5 @@ public interface GameRepository {
 
     Map<Star, List<Player>> getClusterControllers(int clusterID);
 
-    int populateNextStarfield(Map<Point, Star> starfield);
+    int populateNextStarfield(Map<HexPoint, Star> starfield);
 }

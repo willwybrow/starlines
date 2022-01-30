@@ -1,6 +1,7 @@
 package uk.wycor.starlines.domain;
 
 import uk.wycor.starlines.RandomSample;
+import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,17 +11,22 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static uk.wycor.starlines.domain.UniverseManager.CLUSTER_SUBDIVISIONS;
 import static uk.wycor.starlines.domain.UniverseManager.MINIMUM_STAR_COUNT;
 
 public class Starfield {
 
-    static final List<Point> ALL_POSSIBLE_CLUSTER_COORDINATES = IntStream
-            .range(0, UniverseManager.CLUSTER_SIZE)
-            .mapToObj(x -> IntStream.range(0, UniverseManager.CLUSTER_SIZE).boxed().map(y -> new Point(x, y)))
+    static final List<HexPoint> ALL_POSSIBLE_CLUSTER_COORDINATES = IntStream
+            .range(-(CLUSTER_SUBDIVISIONS / 2), (CLUSTER_SUBDIVISIONS / 2) + 1)
+            .mapToObj(q -> IntStream.range(-(CLUSTER_SUBDIVISIONS / 2), (CLUSTER_SUBDIVISIONS / 2) + 1)
+                    .boxed()
+                    .map(r -> new HexPoint(q, r))
+            )
             .flatMap(p -> p)
+            .filter(hexPoint -> -(CLUSTER_SUBDIVISIONS / 2) <= hexPoint.s() && hexPoint.s() <= (CLUSTER_SUBDIVISIONS / 2))
             .toList();
 
-    static Map<Point, Star> generateRandomStarfield() {
+    static Map<HexPoint, Star> generateRandomStarfield() {
         Random random = new Random();
         var totalMassToDistribute = UniverseManager.MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
@@ -31,7 +37,7 @@ public class Starfield {
             totalMassToDistribute -= newStarMass;
         }
 
-        List<Point> randomPointsForNewStars = RandomSample.sample(ALL_POSSIBLE_CLUSTER_COORDINATES, newStarMasses.size());
+        List<HexPoint> randomPointsForNewStars = RandomSample.sample(ALL_POSSIBLE_CLUSTER_COORDINATES, newStarMasses.size());
         return IntStream.range(0, newStarMasses.size())
                 .boxed()
                 .collect(Collectors.toMap(

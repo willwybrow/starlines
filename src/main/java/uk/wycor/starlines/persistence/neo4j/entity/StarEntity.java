@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 import org.neo4j.ogm.annotation.CompositeIndex;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
-import org.neo4j.ogm.types.spatial.CartesianPoint2d;
-import uk.wycor.starlines.domain.Point;
+import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.Set;
 
@@ -23,7 +23,7 @@ import java.util.Set;
 @CompositeIndex(properties = {"clusterID", "coordinate"})
 public class StarEntity extends Entity {
     Integer clusterID;
-    CartesianPoint2d coordinate;
+    CartesianPoint3d coordinate;
     String name;
     Integer currentMass;
     Integer maximumMass;
@@ -34,7 +34,7 @@ public class StarEntity extends Entity {
     public Star toStar() {
         return new Star(
                 this.id,
-                new Point((int)this.coordinate.getX(),
+                new HexPoint((int)this.coordinate.getX(),
                         (int)this.coordinate.getY()),
                 this.name,
                 this.currentMass,

@@ -6,8 +6,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class UniverseManager {
-    public static final int CLUSTER_SIZE = 6;
-    public static final int MASS_PER_NEW_CLUSTER = CLUSTER_SIZE * 3;
+    public static final int CLUSTER_SUBDIVISIONS = 7;
+    public static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 3;
     public static final int MINIMUM_STAR_COUNT = 3;
 
     private final GameRepository gameRepository;

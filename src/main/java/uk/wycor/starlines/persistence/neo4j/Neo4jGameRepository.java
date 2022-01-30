@@ -6,12 +6,12 @@ import lombok.NoArgsConstructor;
 import org.neo4j.ogm.model.Result;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
-import org.neo4j.ogm.types.spatial.CartesianPoint2d;
+import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.RandomSample;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.Point;
 import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.neo4j.entity.PlayerEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.ProbeEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.StarEntity;
@@ -78,10 +78,10 @@ public class Neo4jGameRepository implements GameRepository {
         Integer numberOfProbes;
     }
 
-    public int populateNextStarfield(Map<Point, Star> starfield) {
+    public int populateNextStarfield(Map<HexPoint, Star> starfield) {
         try (Transaction transaction = session.beginTransaction(Transaction.Type.READ_WRITE)) {
             int nextClusterID = latestGeneratedCluster() + 1;
-            starfield.forEach((point, star) -> session.save(new StarEntity(nextClusterID, new CartesianPoint2d(point.x(), point.y()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
+            starfield.forEach((hexPoint, star) -> session.save(new StarEntity(nextClusterID, new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
             transaction.commit();
             return nextClusterID;
         }

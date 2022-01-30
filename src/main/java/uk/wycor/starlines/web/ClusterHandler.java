@@ -30,7 +30,7 @@ public class ClusterHandler implements Handler<RoutingContext> {
                                                 .id(pointStarEntry.getValue().getId().toString())
                                                 .currentMass(pointStarEntry.getValue().getCurrentMass())
                                                 .maximumMass(pointStarEntry.getValue().getMaximumMass()
-                                                ).coordinates(PointJson.fromPoint(pointStarEntry.getKey()))
+                                                ).coordinates(HexPointJson.from(pointStarEntry.getKey()))
                                                 .build()).collect(Collectors.toList()))
                 ));
     }
