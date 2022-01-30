@@ -5,11 +5,11 @@ import uk.wycor.starlines.domain.geometry.HexPoint;
 
 @Getter
 public class HexPointJson {
-    private final int q;
-    private final int r;
-    private final int s;
+    private final long q;
+    private final long r;
+    private final long s;
 
-    HexPointJson(int q, int r, int s) {
+    HexPointJson(long q, long r, long s) {
         this.q = q;
         this.r = r;
         this.s = s;

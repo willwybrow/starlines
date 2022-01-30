@@ -5,9 +5,9 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data
 @AllArgsConstructor
-public class ClusterJson {
-    ClusterMetadataJson cluster;
-    List<StarJson> stars;
+@Data
+public class ClusterMetadataJson {
+    HexPointJson coordinates;
+    List<Long> neighbours;
 }

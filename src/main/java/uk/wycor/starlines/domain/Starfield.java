@@ -32,7 +32,7 @@ public class Starfield {
         var newStarMasses = new ArrayList<Integer>();
 
         while (totalMassToDistribute >= 0) {
-            var newStarMass = random.nextInt(UniverseManager.MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT);
+            var newStarMass = random.nextInt(UniverseManager.MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT) + 1;
             newStarMasses.add(newStarMass);
             totalMassToDistribute -= newStarMass;
         }
