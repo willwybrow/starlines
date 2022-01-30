@@ -9,6 +9,5 @@ public interface GameRepository {
     Player setUpNewPlayer(Player player);
 
     Map<Star, List<Player>> getClusterControllers(ClusterID clusterID);
-
-    int populateNextStarfield(Map<HexPoint, Star> starfield);
+    ClusterID populateNextStarfield(Map<HexPoint, Star> starfield);
 }

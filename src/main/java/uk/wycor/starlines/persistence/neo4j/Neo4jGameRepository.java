@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -41,7 +42,7 @@ public class Neo4jGameRepository implements GameRepository {
     public Player setUpNewPlayer(Player player) {
         try (Transaction transaction = session.beginTransaction()) {
             // TODO tomorrow: pick a cluster and have their first ship(s) orbit the best star of it
-            int clusterId = pickUnoccupiedCluster();
+            var clusterId = pickUnoccupiedCluster();
             StarEntity startingStar = RandomSample.pick(bestStarsInCluster(clusterId));
             PlayerEntity playerEntity = PlayerEntity.fromPlayer(player, startingStar);
             session.save(playerEntity);
@@ -79,35 +80,39 @@ public class Neo4jGameRepository implements GameRepository {
         Integer numberOfProbes;
     }
 
-    public int populateNextStarfield(Map<HexPoint, Star> starfield) {
+    public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {
         try (Transaction transaction = session.beginTransaction(Transaction.Type.READ_WRITE)) {
-            int nextClusterID = latestGeneratedCluster() + 1;
-            starfield.forEach((hexPoint, star) -> session.save(new StarEntity(nextClusterID, new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
+            var nextClusterID = nextClusterID();
+            starfield.forEach((hexPoint, star) -> session.save(new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
             transaction.commit();
             return nextClusterID;
         }
     }
 
-    private int pickUnoccupiedCluster() {
+    private ClusterID pickUnoccupiedCluster() {
         try {
-            return session.query(Integer.class, "MATCH (star:Star)<-[o:ORBITING]-(ship:Ship) WITH star.clusterID as clusterID, count(ship) AS shipsInCluster WHERE shipsInCluster = 0 RETURN clusterID;", Collections.emptyMap()).iterator().next();
+            return new ClusterID(session.query(Integer.class, "MATCH (star:Star)<-[o:ORBITING]-(ship:Ship) WITH star.clusterID as clusterID, count(ship) AS shipsInCluster WHERE shipsInCluster = 0 RETURN clusterID;", Collections.emptyMap()).iterator().next());
         } catch (NullPointerException | NoSuchElementException e) {
-            return latestGeneratedCluster(); // beginning of game
+            return nextClusterID(); // beginning of game
         }
     }
 
-    private int latestGeneratedCluster() {
+    private Optional<ClusterID> latestGeneratedCluster() {
         try {
-            return session.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next();
+            return Optional.of(session.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next()).map(ClusterID::new);
         } catch (NullPointerException | NoSuchElementException e) {
-            return -1; // beginning of game
+            return Optional.empty(); // beginning of game
         }
     }
 
-    private Iterable<StarEntity> bestStarsInCluster(int clusterID) {
+    private ClusterID nextClusterID() {
+        return latestGeneratedCluster().map(ClusterID::getNumeric).map(i -> i + 1).map(ClusterID::new).orElse(new ClusterID(0));
+    }
+
+    private Iterable<StarEntity> bestStarsInCluster(ClusterID clusterID) {
         return session.query(StarEntity.class, "MATCH (star:Star) " +
                 "WHERE star.clusterID = $clusterID " +
                 "WITH apoc.agg.maxItems(star, star.currentMass) as maxData " +
-                "RETURN maxData.items", Map.of("clusterID", clusterID));
+                "RETURN maxData.items", Map.of("clusterID", clusterID.getNumeric()));
     }
 }

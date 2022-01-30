@@ -22,7 +22,7 @@ import java.util.Set;
 @NodeEntity(label = "Star")
 @CompositeIndex(properties = {"clusterID", "coordinate"})
 public class StarEntity extends Entity {
-    Integer clusterID;
+    Long clusterID;
     CartesianPoint3d coordinate;
     String name;
     Integer currentMass;
