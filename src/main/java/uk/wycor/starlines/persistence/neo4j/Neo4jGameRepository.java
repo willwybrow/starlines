@@ -3,7 +3,7 @@ package uk.wycor.starlines.persistence.neo4j;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.neo4j.ogm.model.Result;
+import org.neo4j.driver.Value;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
@@ -22,39 +22,59 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+
+import static uk.wycor.starlines.persistence.neo4j.Neo4jDriver.DRIVER;
 
 public class Neo4jGameRepository implements GameRepository {
-    protected Session session = Neo4jSessionFactory.getInstance().getNeo4jSession();
-
-    public static void main(String[] args) {
-        Neo4jGameRepository neo4JGameRepository = new Neo4jGameRepository();
-        System.out.println("Loading all stars...");
-        neo4JGameRepository.loadAllStars().forEach(star -> System.out.println(star.getName()));
-    }
+    protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
+    protected org.neo4j.driver.Session session = DRIVER.session();
 
     Iterable<StarEntity> loadAllStars() {
-        return session.loadAll(StarEntity.class);
+        return ogmSession.loadAll(StarEntity.class);
     }
 
     @Override
     public Player setUpNewPlayer(Player player) {
-        try (Transaction transaction = session.beginTransaction()) {
+        try (Transaction transaction = ogmSession.beginTransaction()) {
             // TODO tomorrow: pick a cluster and have their first ship(s) orbit the best star of it
             var clusterId = pickUnoccupiedCluster();
             StarEntity startingStar = RandomSample.pick(bestStarsInCluster(clusterId));
             PlayerEntity playerEntity = PlayerEntity.fromPlayer(player, startingStar);
-            session.save(playerEntity);
-            session.save(ProbeEntity.builder().orbiting(startingStar).ownedBy(playerEntity).build());
+            ogmSession.save(playerEntity);
+            ogmSession.save(ProbeEntity.builder().orbiting(startingStar).ownedBy(playerEntity).build());
             transaction.commit();
         }
         return player;
     }
 
+    private Star mapFromResult(Value star) {
+        return new Star(
+                UUID.fromString(star.get("id").asString()),
+                new HexPoint((long)star.get("coordinate").asPoint().x(), (long)star.get("coordinate").asPoint().y()),
+                star.get("name").asString(),
+                star.get("currentMass").asInt(),
+                star.get("maximumMass").asInt()
+        );
+    }
+
+    private List<Player> mapFromListOfPlayerEntities(Value listOfPlayers) {
+        return listOfPlayers.asList(value -> new Player(UUID.fromString(value.get("id").asString()), value.get("name").asString()));
+    }
+
     @Override
     public Map<Star, List<Player>> getClusterControllers(ClusterID clusterID) {
-        Result result = session.query("""
+        return session.run("""
+                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
+                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
+                        WITH star, player, count(ship) AS playerProbes\s
+                        WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
+                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()))
+                .stream()
+                .collect(Collectors.toMap(record -> mapFromResult(record.get("star")), record -> mapFromListOfPlayerEntities(record.get("controllingPlayers"))));
+        /*
+        Result result = ogmSession.query("""
                         MATCH (star:Star) WHERE star.clusterID = $clusterID\s
                         OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
                         WITH star, player, count(ship) AS playerProbes\s
@@ -69,6 +89,7 @@ public class Neo4jGameRepository implements GameRepository {
                         return new ControlResult(starEntity, Collections.emptyList(), 0);
                     }
                 }).collect(Collectors.toMap(controlResult -> controlResult.star.toStar(), controlResult -> controlResult.controllingPlayers.stream().map(PlayerEntity::toPlayer).collect(Collectors.toList())));
+                */
     }
 
     @Data
@@ -81,9 +102,9 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {
-        try (Transaction transaction = session.beginTransaction(Transaction.Type.READ_WRITE)) {
+        try (Transaction transaction = ogmSession.beginTransaction(Transaction.Type.READ_WRITE)) {
             var nextClusterID = nextClusterID();
-            starfield.forEach((hexPoint, star) -> session.save(new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
+            starfield.forEach((hexPoint, star) -> ogmSession.save(new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
             transaction.commit();
             return nextClusterID;
         }
@@ -91,7 +112,7 @@ public class Neo4jGameRepository implements GameRepository {
 
     private ClusterID pickUnoccupiedCluster() {
         try {
-            return new ClusterID(session.query(Integer.class, "MATCH (star:Star)<-[o:ORBITING]-(ship:Ship) WITH star.clusterID as clusterID, count(ship) AS shipsInCluster WHERE shipsInCluster = 0 RETURN clusterID;", Collections.emptyMap()).iterator().next());
+            return new ClusterID(ogmSession.query(Integer.class, "MATCH (star:Star)<-[o:ORBITING]-(ship:Ship) WITH star.clusterID as clusterID, count(ship) AS shipsInCluster WHERE shipsInCluster = 0 RETURN clusterID;", Collections.emptyMap()).iterator().next());
         } catch (NullPointerException | NoSuchElementException e) {
             return nextClusterID(); // beginning of game
         }
@@ -99,7 +120,7 @@ public class Neo4jGameRepository implements GameRepository {
 
     private Optional<ClusterID> latestGeneratedCluster() {
         try {
-            return Optional.of(session.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next()).map(ClusterID::new);
+            return Optional.of(ogmSession.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next()).map(ClusterID::new);
         } catch (NullPointerException | NoSuchElementException e) {
             return Optional.empty(); // beginning of game
         }
@@ -110,7 +131,7 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     private Iterable<StarEntity> bestStarsInCluster(ClusterID clusterID) {
-        return session.query(StarEntity.class, "MATCH (star:Star) " +
+        return ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
                 "WHERE star.clusterID = $clusterID " +
                 "WITH apoc.agg.maxItems(star, star.currentMass) as maxData " +
                 "RETURN maxData.items", Map.of("clusterID", clusterID.getNumeric()));
