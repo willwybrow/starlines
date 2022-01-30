@@ -4,6 +4,7 @@ import org.neo4j.ogm.config.ClasspathConfigurationSource;
 import org.neo4j.ogm.config.ConfigurationSource;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
+import uk.wycor.starlines.web.ClusterIDJson;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,7 +21,7 @@ public class StarlinesGame {
         }
     }
 
-    public Map<HexPoint, Star> getClusterByID(int clusterID) {
+    public Map<HexPoint, Star> getClusterByID(ClusterID clusterID) {
         return this.gameRepository
                 .getClusterControllers(clusterID)
                 .entrySet()

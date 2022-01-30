@@ -11,10 +11,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static uk.wycor.starlines.domain.UniverseManager.CLUSTER_SUBDIVISIONS;
-import static uk.wycor.starlines.domain.UniverseManager.MINIMUM_STAR_COUNT;
-
 public class Starfield {
+
+    static final int CLUSTER_SUBDIVISIONS = 7;
+    static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 3;
+    static final int MINIMUM_STAR_COUNT = 3;
 
     static final List<HexPoint> ALL_POSSIBLE_CLUSTER_COORDINATES = IntStream
             .range(-(CLUSTER_SUBDIVISIONS / 2), (CLUSTER_SUBDIVISIONS / 2) + 1)
@@ -28,11 +29,11 @@ public class Starfield {
 
     static Map<HexPoint, Star> generateRandomStarfield() {
         Random random = new Random();
-        var totalMassToDistribute = UniverseManager.MASS_PER_NEW_CLUSTER;
+        var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
 
         while (totalMassToDistribute >= 0) {
-            var newStarMass = random.nextInt(UniverseManager.MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT) + 1;
+            var newStarMass = random.nextInt(MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT) + 1;
             newStarMasses.add(newStarMass);
             totalMassToDistribute -= newStarMass;
         }

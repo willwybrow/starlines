@@ -18,13 +18,13 @@ public class ClusterHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(RoutingContext event) {
-        int clusterID = Integer.parseInt(event.pathParam("clusterID"));
+        var clusterID = new ClusterID(Integer.parseInt(event.pathParam("clusterID")));
         var starMap = starlinesGame.getClusterByID(clusterID);
         event.response()
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(
                         new ClusterJson(
-                                new ClusterMetadataJson(HexPointJson.from(ClusterID.coordinate(clusterID)), ClusterID.neighbourClusterIDs(clusterID)),
+                                new ClusterMetadataJson(clusterID),
                                 starMap
                                         .values()
                                         .stream()

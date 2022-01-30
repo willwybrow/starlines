@@ -8,6 +8,7 @@ import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.RandomSample;
+import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
@@ -51,13 +52,13 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     @Override
-    public Map<Star, List<Player>> getClusterControllers(int clusterID) {
+    public Map<Star, List<Player>> getClusterControllers(ClusterID clusterID) {
         Result result = session.query("""
                         MATCH (star:Star) WHERE star.clusterID = $clusterID\s
                         OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
                         WITH star, player, count(ship) AS playerProbes\s
                         WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
-                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID));
+                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()));
         return StreamSupport.stream(result.spliterator(), false)
                 .map(resultMap -> {
                     StarEntity starEntity = (StarEntity) resultMap.get("star");

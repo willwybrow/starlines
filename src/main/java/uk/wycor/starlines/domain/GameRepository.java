@@ -8,7 +8,7 @@ import java.util.Map;
 public interface GameRepository {
     Player setUpNewPlayer(Player player);
 
-    Map<Star, List<Player>> getClusterControllers(int clusterID);
+    Map<Star, List<Player>> getClusterControllers(ClusterID clusterID);
 
     int populateNextStarfield(Map<HexPoint, Star> starfield);
 }

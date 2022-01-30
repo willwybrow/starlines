@@ -6,9 +6,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class UniverseManager {
-    public static final int CLUSTER_SUBDIVISIONS = 7;
-    public static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 3;
-    public static final int MINIMUM_STAR_COUNT = 3;
 
     private final GameRepository gameRepository;
 
@@ -29,7 +26,7 @@ public class UniverseManager {
             universeManager.gameRepository.setUpNewPlayer(new Player(UUID.randomUUID(), name));
         });
 
-        starlinesGame.getClusterByID(0);
+        starlinesGame.getClusterByID(new ClusterID(0));
     }
 
 }
