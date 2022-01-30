@@ -26,12 +26,8 @@ public class ClusterHandler implements Handler<RoutingContext> {
                                 starMap
                                         .entrySet()
                                         .stream()
-                                        .map(pointStarEntry -> StarJson.builder()
-                                                .id(pointStarEntry.getValue().getId().toString())
-                                                .currentMass(pointStarEntry.getValue().getCurrentMass())
-                                                .maximumMass(pointStarEntry.getValue().getMaximumMass()
-                                                ).coordinates(HexPointJson.from(pointStarEntry.getKey()))
-                                                .build()).collect(Collectors.toList()))
+                                        .map(pointStarEntry -> StarJson.fromStar(pointStarEntry.getValue()))
+                                        .collect(Collectors.toList()))
                 ));
     }
 }

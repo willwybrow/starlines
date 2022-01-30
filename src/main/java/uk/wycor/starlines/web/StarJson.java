@@ -9,6 +9,7 @@ import uk.wycor.starlines.domain.Star;
 public class StarJson {
 
     private String id;
+    private String name;
     private HexPointJson coordinates;
     private int currentMass;
     private int maximumMass;
@@ -17,6 +18,8 @@ public class StarJson {
         return StarJson
                 .builder()
                 .id(star.getId().toString())
+                .name(star.getName())
+                .coordinates(HexPointJson.from(star.getCoordinate()))
                 .currentMass(star.getCurrentMass())
                 .maximumMass(star.getMaximumMass())
                 .build();
