@@ -7,10 +7,10 @@ import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.Probe;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.StarControl;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.entity.PlayerEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.ProbeEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.StarEntity;
@@ -23,8 +23,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -34,23 +32,38 @@ public class Neo4jGameRepository implements GameRepository {
     protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
     protected org.neo4j.driver.Session session = DRIVER.session();
 
+    class DualTransactions implements AutoCloseable {
+        final org.neo4j.ogm.transaction.Transaction ogmTransaction;
+        final org.neo4j.driver.Transaction transaction;
+
+        public DualTransactions(Transaction ogmTransaction, org.neo4j.driver.Transaction transaction) {
+            this.ogmTransaction = ogmTransaction;
+            this.transaction = transaction;
+        }
+
+        public DualTransactions beginTransaction() {
+            return new DualTransactions(ogmSession.beginTransaction(), session.beginTransaction());
+        }
+
+        @Override
+        public void close() throws Exception {
+            this.ogmTransaction.commit();
+            this.transaction.close();
+        }
+    }
+
     @Override
-    public Player setUpNewPlayer(
-            Supplier<Player> newPlayerSupplier,
-            Supplier<Collection<Probe>> startingProbeSupplier,
-            Supplier<ClusterID> destinationClusterPicker,
-            Function<ClusterID, Collection<Star>> getStarsInCluster,
-            Function<Collection<Star>, Star> starPicker
-    ) {
+    public Player setUpNewPlayer(NewPlayerWork newPlayerWork) {
         try (Transaction ogmTransaction = ogmSession.beginTransaction()) {
             var transaction = session.beginTransaction();
-            var clusterId = destinationClusterPicker.get();
-            var startingStar = starPicker.apply(getStarsInCluster.apply(clusterId));
+            var clusterId = newPlayerWork.destinationClusterPicker().get();
+            var startingStar = newPlayerWork.starPicker().apply(newPlayerWork.getStarsInCluster().apply(clusterId));
             StarEntity starEntity = getStarEntity(startingStar);
-            var newPlayer = newPlayerSupplier.get();
+            var newPlayer = newPlayerWork.newPlayerSupplier().get();
             var newPlayerEntity = PlayerEntity.fromPlayer(newPlayer, starEntity);
             ogmSession.save(newPlayerEntity);
-            startingProbeSupplier.get().forEach(probe -> ogmSession.save(ProbeEntity.builder().id(probe.getId()).orbiting(starEntity).ownedBy(newPlayerEntity).build()));
+            newPlayerWork.startingProbeSupplier().get()
+                    .forEach(probe -> ogmSession.save(ProbeEntity.builder().id(probe.getId()).orbiting(starEntity).ownedBy(newPlayerEntity).build()));
             transaction.commit();
             ogmTransaction.commit();
             return newPlayer;

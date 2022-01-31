@@ -3,6 +3,7 @@ package uk.wycor.starlines.domain;
 import org.neo4j.ogm.config.ClasspathConfigurationSource;
 import org.neo4j.ogm.config.ConfigurationSource;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
 import java.time.Instant;
@@ -15,8 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,17 +50,13 @@ public class StarlinesGame {
         3. find a vacant cluster and pick the best star
         4. save the player's starting ships to the above star
         */
-        Player newPlayer = new Player(UUID.randomUUID(), playerName);
-        Probe newProbe = new Probe(UUID.randomUUID());
-        Supplier<ClusterID> freeClusterPicker = gameRepository::pickUnoccupiedCluster;
-        Function<Collection<Star>, Star> bestStarPicker = this::bestStar;
-        return gameRepository.setUpNewPlayer(
-                () -> newPlayer,
-                () -> List.of(newProbe),
-                freeClusterPicker,
+        return gameRepository.setUpNewPlayer(new NewPlayerWork(
+                () -> new Player(UUID.randomUUID(), playerName),
+                () -> List.of(new Probe(UUID.randomUUID())),
+                gameRepository::pickUnoccupiedCluster,
                 gameRepository::getStarsInCluster,
-                bestStarPicker
-        );
+                this::bestStar
+        ));
     }
 
     public Star bestStar(Collection<Star> stars) {
