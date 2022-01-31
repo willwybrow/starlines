@@ -59,7 +59,16 @@ public class StarlinesGame {
         ));
     }
 
-    public Star bestStar(Collection<Star> stars) {
+    public void processOrders(Instant tick) {
+        /*
+        1. get all orders in state unfulfilled with datetime = this tick
+        2. for each order
+         a.
+
+         */
+    }
+
+    private Star bestStar(Collection<Star> stars) {
         return Collections.max(stars, Comparator.comparingInt(Star::getMaximumMass));
     }
 

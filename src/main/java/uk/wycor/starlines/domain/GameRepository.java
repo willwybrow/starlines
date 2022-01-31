@@ -17,5 +17,4 @@ public interface GameRepository {
 
     Collection<Star> getStarsInCluster(ClusterID clusterID);
 
-    Collection<Star> bestStarsInCluster(ClusterID clusterID);
 }

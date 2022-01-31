@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class AutoTransactingNeo4jRepository implements GameRepository {
+    /* this might be a useful thing or I might be thinking like a python guy
+    * */
     private final Neo4jGameRepository neo4jGameRepository;
 
     public AutoTransactingNeo4jRepository() {
@@ -60,15 +62,6 @@ public class AutoTransactingNeo4jRepository implements GameRepository {
     public Collection<Star> getStarsInCluster(ClusterID clusterID) {
         try (Transaction transaction = this.neo4jGameRepository.ogmSession.beginTransaction()) {
             var result = this.neo4jGameRepository.getStarsInCluster(clusterID);
-            transaction.commit();
-            return result;
-        }
-    }
-
-    @Override
-    public Collection<Star> bestStarsInCluster(ClusterID clusterID) {
-        try (Transaction transaction = this.neo4jGameRepository.ogmSession.beginTransaction()) {
-            var result = this.neo4jGameRepository.bestStarsInCluster(clusterID);
             transaction.commit();
             return result;
         }

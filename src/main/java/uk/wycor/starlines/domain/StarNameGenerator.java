@@ -60,6 +60,7 @@ public class StarNameGenerator {
     };
 
     private static final String[][][] NAME_SCHEMAS = {
+            {INITIAL_CONSONANT_SOUNDS, VOWEL_SOUNDS},
             {INITIAL_CONSONANT_SOUNDS, VOWEL_SOUNDS, CONSONANT_SOUNDS},
             {INITIAL_CONSONANT_SOUNDS, VOWEL_SOUNDS, CONSONANT_SOUNDS, VOWEL_SOUNDS},
     };

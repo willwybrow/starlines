@@ -1,7 +1,5 @@
 package uk.wycor.starlines.persistence.neo4j;
 
-import org.neo4j.driver.Value;
-import org.neo4j.driver.types.MapAccessor;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
@@ -23,7 +21,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -48,6 +45,9 @@ public class Neo4jGameRepository implements GameRepository {
 
     @Override
     public Set<StarControl> getClusterControllers(ClusterID clusterID) {
+        /* this should probably just be get all stars plus ships orbiting stars
+        and the controller ought to be worked out in business logic layer
+         */
         return StreamSupport.stream(ogmSession.query("""
                         MATCH (star:Star) WHERE star.clusterID = $clusterID\s
                         OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
@@ -79,20 +79,6 @@ public class Neo4jGameRepository implements GameRepository {
         }
     }
 
-    private Star mapFromResult(MapAccessor star) {
-        return new Star(
-                UUID.fromString(star.get("id").asString()),
-                new HexPoint((long)star.get("coordinate").asPoint().x(), (long)star.get("coordinate").asPoint().y()),
-                star.get("name").asString(),
-                star.get("currentMass").asInt(),
-                star.get("maximumMass").asInt()
-        );
-    }
-
-    private List<Player> mapFromListOfPlayerEntities(Value listOfPlayers) {
-        return listOfPlayers.asList(value -> new Player(UUID.fromString(value.get("id").asString()), value.get("name").asString()));
-    }
-
     @Override
     public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {
         try (Transaction transaction = ogmSession.beginTransaction(Transaction.Type.READ_WRITE)) {
@@ -118,6 +104,28 @@ public class Neo4jGameRepository implements GameRepository {
         }
     }
 
+    @Override
+    public Collection<Star> getStarsInCluster(ClusterID clusterID) {
+        return StreamSupport
+                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
+                        "WHERE star.clusterID = $clusterID " +
+                        "RETURN star", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
+                .map(StarEntity::toStar)
+                .collect(Collectors.toSet());
+    }
+    /*
+    // "best" is for game logic class to decide, NOT repository
+    @Override
+    public Collection<Star> bestStarsInCluster(ClusterID clusterID) {
+        return StreamSupport
+                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
+                        "WHERE star.clusterID = $clusterID " +
+                        "WITH apoc.agg.maxItems(star, star.currentMass) as maxData " +
+                        "RETURN maxData.items", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
+                .map(StarEntity::toStar)
+                .collect(Collectors.toSet());
+    }
+    */
     private Optional<ClusterID> latestGeneratedCluster() {
         try {
             return Optional.of(ogmSession.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next()).map(ClusterID::new);
@@ -132,32 +140,5 @@ public class Neo4jGameRepository implements GameRepository {
 
     private ClusterID nextClusterID() {
         return latestGeneratedCluster().map(ClusterID::getNumeric).map(i -> i + 1).map(ClusterID::new).orElse(new ClusterID(0));
-    }
-
-    private Iterable<StarEntity> starsInCluster(ClusterID clusterID) {
-        return ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
-                "WHERE star.clusterID = $clusterID " +
-                "RETURN star", Map.of("clusterID", clusterID.getNumeric()));
-    }
-
-    @Override
-    public Collection<Star> getStarsInCluster(ClusterID clusterID) {
-        return StreamSupport
-                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
-                "WHERE star.clusterID = $clusterID " +
-                "RETURN star", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
-                .map(StarEntity::toStar)
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Collection<Star> bestStarsInCluster(ClusterID clusterID) {
-        return StreamSupport
-                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
-                "WHERE star.clusterID = $clusterID " +
-                "WITH apoc.agg.maxItems(star, star.currentMass) as maxData " +
-                "RETURN maxData.items", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
-                .map(StarEntity::toStar)
-                .collect(Collectors.toSet());
     }
 }
