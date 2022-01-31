@@ -1,6 +1,7 @@
 package uk.wycor.starlines.persistence.neo4j;
 
 import org.neo4j.driver.Value;
+import org.neo4j.driver.types.MapAccessor;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
@@ -26,36 +27,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static uk.wycor.starlines.persistence.neo4j.Neo4jDriver.DRIVER;
-
 public class Neo4jGameRepository implements GameRepository {
     protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
-    protected org.neo4j.driver.Session session = DRIVER.session();
-
-    class DualTransactions implements AutoCloseable {
-        final org.neo4j.ogm.transaction.Transaction ogmTransaction;
-        final org.neo4j.driver.Transaction transaction;
-
-        public DualTransactions(Transaction ogmTransaction, org.neo4j.driver.Transaction transaction) {
-            this.ogmTransaction = ogmTransaction;
-            this.transaction = transaction;
-        }
-
-        public DualTransactions beginTransaction() {
-            return new DualTransactions(ogmSession.beginTransaction(), session.beginTransaction());
-        }
-
-        @Override
-        public void close() throws Exception {
-            this.ogmTransaction.commit();
-            this.transaction.close();
-        }
-    }
 
     @Override
     public Player setUpNewPlayer(NewPlayerWork newPlayerWork) {
         try (Transaction ogmTransaction = ogmSession.beginTransaction()) {
-            var transaction = session.beginTransaction();
             var clusterId = newPlayerWork.destinationClusterPicker().get();
             var startingStar = newPlayerWork.starPicker().apply(newPlayerWork.getStarsInCluster().apply(clusterId));
             StarEntity starEntity = getStarEntity(startingStar);
@@ -64,7 +41,6 @@ public class Neo4jGameRepository implements GameRepository {
             ogmSession.save(newPlayerEntity);
             newPlayerWork.startingProbeSupplier().get()
                     .forEach(probe -> ogmSession.save(ProbeEntity.builder().id(probe.getId()).orbiting(starEntity).ownedBy(newPlayerEntity).build()));
-            transaction.commit();
             ogmTransaction.commit();
             return newPlayer;
         }
@@ -72,22 +48,38 @@ public class Neo4jGameRepository implements GameRepository {
 
     @Override
     public Set<StarControl> getClusterControllers(ClusterID clusterID) {
-        return session.run("""
+        return StreamSupport.stream(ogmSession.query("""
                         MATCH (star:Star) WHERE star.clusterID = $clusterID\s
                         OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
                         WITH star, player, count(ship) AS playerProbes\s
                         WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
                         RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()))
-                .stream()
-                .map(record -> new StarControl(
-                        mapFromResult(record.get("star")),
-                        mapFromListOfPlayerEntities(record.get("controllingPlayers")),
-                        record.get("numberOfProbes").asInt(0))
-                )
+                .spliterator(), false)
+                .map(result -> new StarControl(
+                        ((StarEntity) result.get("star")).toStar(),
+                        handleCustomQueryResultList(result.get("controllingPlayers"), PlayerEntity.class).stream().map(PlayerEntity::toPlayer).collect(Collectors.toList()),
+                        handleCustomQueryResultScalar(result.get("numberOfProbes"))
+                ))
                 .collect(Collectors.toSet());
     }
 
-    private Star mapFromResult(Value star) {
+    private <T> List<T> handleCustomQueryResultList(Object resultValue, Class<T> listItemClass) {
+        try {
+            return (List<T>) resultValue;
+        } catch (ClassCastException | NullPointerException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private int handleCustomQueryResultScalar(Object castable){
+        try {
+            return (Integer) castable;
+        } catch (ClassCastException | NullPointerException e) {
+            return 0;
+        }
+    }
+
+    private Star mapFromResult(MapAccessor star) {
         return new Star(
                 UUID.fromString(star.get("id").asString()),
                 new HexPoint((long)star.get("coordinate").asPoint().x(), (long)star.get("coordinate").asPoint().y()),
