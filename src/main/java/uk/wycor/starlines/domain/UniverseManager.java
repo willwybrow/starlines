@@ -2,7 +2,6 @@ package uk.wycor.starlines.domain;
 
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 public class UniverseManager {
@@ -14,16 +13,16 @@ public class UniverseManager {
     }
 
     public void expandUniverse() {
-        gameRepository.populateNextStarfield(Starfield.generateRandomStarfield());
+        gameRepository.populateNextStarfield(StarfieldGenerator.generateRandomStarfield());
     }
 
     public static void main(String[] args) {
         UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
         StarlinesGame starlinesGame = new StarlinesGame();
 
-        Stream.of("Will", "Sam", "Ben", "Fran", "Carol", "Andy", "Wai", "Lucy").forEach(name -> {
+        Stream.of("Lim", "Bum", "Nill", "Cram", "Larol", "Endi", "Shin", "Flam").forEach(name -> {
             universeManager.expandUniverse();
-            universeManager.gameRepository.setUpNewPlayer(new Player(UUID.randomUUID(), name));
+            starlinesGame.setUpNewPlayer(name);
         });
 
         starlinesGame.getClusterByID(new ClusterID(0));

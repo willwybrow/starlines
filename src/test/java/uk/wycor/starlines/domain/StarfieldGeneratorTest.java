@@ -8,9 +8,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.wycor.starlines.domain.Starfield.CLUSTER_SUBDIVISIONS;
+import static uk.wycor.starlines.domain.StarfieldGenerator.CLUSTER_SUBDIVISIONS;
 
-class StarfieldTest {
+class StarfieldGeneratorTest {
     @Test
     void clusterSubdivisionIsOdd() {
         assertEquals(1, CLUSTER_SUBDIVISIONS % 2);
@@ -18,7 +18,7 @@ class StarfieldTest {
 
     @Test
     void allPossibleCoordinates() {
-        Set<HexPoint> allPossibleCoordinates = new HashSet<>(Starfield.ALL_POSSIBLE_CLUSTER_COORDINATES);
+        Set<HexPoint> allPossibleCoordinates = new HashSet<>(StarfieldGenerator.ALL_POSSIBLE_CLUSTER_COORDINATES);
 
         assertTrue(allPossibleCoordinates.contains(new HexPoint(0, 0)));
         assertTrue(allPossibleCoordinates.contains(new HexPoint(0, -3)));

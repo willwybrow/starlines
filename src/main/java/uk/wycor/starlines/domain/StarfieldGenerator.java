@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Starfield {
+public class StarfieldGenerator {
 
     static final int CLUSTER_SUBDIVISIONS = 7;
     static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 3;

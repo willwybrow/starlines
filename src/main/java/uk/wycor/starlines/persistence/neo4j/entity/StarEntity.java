@@ -9,6 +9,7 @@ import org.neo4j.ogm.annotation.CompositeIndex;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
+import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
@@ -30,6 +31,16 @@ public class StarEntity extends Entity {
 
     @Relationship(type = "LINKED_TO")
     Set<StarEntity> linkedTo;
+
+    public static StarEntity from(Star star, ClusterID inCluster) {
+        return StarEntity
+                .builder()
+                .clusterID(inCluster.getNumeric())
+                .coordinate(new CartesianPoint3d((double)star.getCoordinate().q(), (double)star.getCoordinate().r(), (double)star.getCoordinate().s()))
+                .currentMass(star.getCurrentMass())
+                .maximumMass(star.getMaximumMass())
+                .build();
+    }
 
     public Star toStar() {
         return new Star(
