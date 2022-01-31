@@ -19,7 +19,7 @@ public class StarJsonTest {
                 1,
                 1);
 
-        StarJson starJson = StarJson.fromStar(givenStar);
+        StarJson starJson = StarJson.from(givenStar);
 
         assertEquals(
                 "{\"id\":\"00000000-0000-0000-0000-000000000000\",\"currentMass\":1,\"maximumMass\":1}",

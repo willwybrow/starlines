@@ -4,10 +4,14 @@ import org.neo4j.ogm.config.ClasspathConfigurationSource;
 import org.neo4j.ogm.config.ConfigurationSource;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
-import uk.wycor.starlines.web.ClusterIDJson;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class StarlinesGame {
     private final static ConfigurationSource CONFIGURATION_SOURCE = new ClasspathConfigurationSource("game.properties");
@@ -21,11 +25,22 @@ public class StarlinesGame {
         }
     }
 
-    public Map<HexPoint, Star> getClusterByID(ClusterID clusterID) {
+    public Instant nextTick() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfThisHour = now.truncatedTo(ChronoUnit.HOURS);
+        return IntStream.range(0, 4)
+                .map(i -> i * 15)
+                .mapToObj(startOfThisHour::plusMinutes)
+                .filter(time -> time.isAfter(now))
+                .findFirst()
+                .orElseThrow(RuntimeException::new) // TODO: something better
+                .toInstant(ZoneOffset.UTC);
+    }
+
+    public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {
         return this.gameRepository
                 .getClusterControllers(clusterID)
-                .entrySet()
                 .stream()
-                .collect(Collectors.toMap(starListEntry -> starListEntry.getKey().getCoordinate(), Map.Entry::getKey));
+                .collect(Collectors.toMap(starControl -> starControl.getStar().getCoordinate(), starControl -> starControl));
     }
 }

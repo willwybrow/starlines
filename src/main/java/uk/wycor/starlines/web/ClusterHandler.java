@@ -28,7 +28,7 @@ public class ClusterHandler implements Handler<RoutingContext> {
                                 starMap
                                         .values()
                                         .stream()
-                                        .map(StarJson::fromStar)
+                                        .map(StarJson::from)
                                         .collect(Collectors.toList()))
                 ));
     }

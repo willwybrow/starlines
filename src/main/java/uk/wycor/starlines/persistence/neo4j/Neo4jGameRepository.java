@@ -1,8 +1,5 @@
 package uk.wycor.starlines.persistence.neo4j;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.neo4j.driver.Value;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
@@ -12,6 +9,7 @@ import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.StarControl;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.neo4j.entity.PlayerEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.ProbeEntity;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -30,10 +29,6 @@ import static uk.wycor.starlines.persistence.neo4j.Neo4jDriver.DRIVER;
 public class Neo4jGameRepository implements GameRepository {
     protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
     protected org.neo4j.driver.Session session = DRIVER.session();
-
-    Iterable<StarEntity> loadAllStars() {
-        return ogmSession.loadAll(StarEntity.class);
-    }
 
     @Override
     public Player setUpNewPlayer(Player player) {
@@ -49,6 +44,23 @@ public class Neo4jGameRepository implements GameRepository {
         return player;
     }
 
+    @Override
+    public Set<StarControl> getClusterControllers(ClusterID clusterID) {
+        return session.run("""
+                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
+                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
+                        WITH star, player, count(ship) AS playerProbes\s
+                        WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
+                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()))
+                .stream()
+                .map(record -> new StarControl(
+                        mapFromResult(record.get("star")),
+                        mapFromListOfPlayerEntities(record.get("controllingPlayers")),
+                        record.get("numberOfProbes").asInt(0))
+                )
+                .collect(Collectors.toSet());
+    }
+
     private Star mapFromResult(Value star) {
         return new Star(
                 UUID.fromString(star.get("id").asString()),
@@ -61,44 +73,6 @@ public class Neo4jGameRepository implements GameRepository {
 
     private List<Player> mapFromListOfPlayerEntities(Value listOfPlayers) {
         return listOfPlayers.asList(value -> new Player(UUID.fromString(value.get("id").asString()), value.get("name").asString()));
-    }
-
-    @Override
-    public Map<Star, List<Player>> getClusterControllers(ClusterID clusterID) {
-        return session.run("""
-                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
-                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
-                        WITH star, player, count(ship) AS playerProbes\s
-                        WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
-                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()))
-                .stream()
-                .collect(Collectors.toMap(record -> mapFromResult(record.get("star")), record -> mapFromListOfPlayerEntities(record.get("controllingPlayers"))));
-        /*
-        Result result = ogmSession.query("""
-                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
-                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
-                        WITH star, player, count(ship) AS playerProbes\s
-                        WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
-                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()));
-        return StreamSupport.stream(result.spliterator(), false)
-                .map(resultMap -> {
-                    StarEntity starEntity = (StarEntity) resultMap.get("star");
-                    try {
-                        return new ControlResult(starEntity, (List<PlayerEntity>) resultMap.get("controllingPlayers"), (Integer) resultMap.get("numberOfProbes"));
-                    } catch (ClassCastException e) {
-                        return new ControlResult(starEntity, Collections.emptyList(), 0);
-                    }
-                }).collect(Collectors.toMap(controlResult -> controlResult.star.toStar(), controlResult -> controlResult.controllingPlayers.stream().map(PlayerEntity::toPlayer).collect(Collectors.toList())));
-                */
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    static class ControlResult {
-        StarEntity star;
-        List<PlayerEntity> controllingPlayers;
-        Integer numberOfProbes;
     }
 
     public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {

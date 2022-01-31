@@ -3,9 +3,14 @@ package uk.wycor.starlines.web;
 import lombok.Builder;
 import lombok.Data;
 import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.StarControl;
 
-@Builder
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Builder(toBuilder = true)
 @Data
+// @Accessors(fluent = true, chain = true)
 public class StarJson {
 
     private String id;
@@ -14,7 +19,10 @@ public class StarJson {
     private int currentMass;
     private int maximumMass;
 
-    public static StarJson fromStar(Star star) {
+    private List<PlayerJson> controllingPlayers;
+    private int controllingPlayerShipCount = 0;
+
+    public static StarJson from(Star star) {
         return StarJson
                 .builder()
                 .id(star.getId().toString())
@@ -22,6 +30,20 @@ public class StarJson {
                 .coordinates(HexPointJson.from(star.getCoordinate()))
                 .currentMass(star.getCurrentMass())
                 .maximumMass(star.getMaximumMass())
+                .build();
+    }
+
+    public static StarJson from(StarControl starControl) {
+        return StarJson
+                .from(starControl.getStar())
+                .toBuilder()
+                .controllingPlayers(starControl
+                        .getControllingPlayers()
+                        .stream()
+                        .map(PlayerJson::from)
+                        .collect(Collectors.toList())
+                )
+                .controllingPlayerShipCount(starControl.getControllingProbeCount())
                 .build();
     }
 }

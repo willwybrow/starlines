@@ -14,7 +14,6 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) {
         vertx.createHttpServer()
-                .requestHandler(req -> req.response().setStatusCode(404).putHeader("content-type", "text/plain; charset=\"utf-8\"").end("Not found"))
                 .requestHandler(new ApiRouter(vertx, starlinesGame).getRouter())
                 .listen(8888, http -> {
                     if (http.succeeded()) {
