@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 public class StarfieldGenerator {
 
     static final int CLUSTER_SUBDIVISIONS = 7;
-    static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 3;
+    static final int MASS_PER_NEW_CLUSTER = CLUSTER_SUBDIVISIONS * 30;
     static final int MINIMUM_STAR_COUNT = 3;
 
     static final List<HexPoint> ALL_POSSIBLE_CLUSTER_COORDINATES = IntStream
@@ -32,7 +32,7 @@ public class StarfieldGenerator {
         var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
 
-        while (totalMassToDistribute >= 0) {
+        while (totalMassToDistribute >= 0 && newStarMasses.size() < ALL_POSSIBLE_CLUSTER_COORDINATES.size()) {
             var newStarMass = random.nextInt(MASS_PER_NEW_CLUSTER / MINIMUM_STAR_COUNT) + 1;
             newStarMasses.add(newStarMass);
             totalMassToDistribute -= newStarMass;
@@ -48,7 +48,7 @@ public class StarfieldGenerator {
                                 randomPointsForNewStars.get(i),
                                 StarNameGenerator.randomName(),
                                 newStarMasses.get(i),
-                                (int) Math.round((float)newStarMasses.get(i) * 1.75))
+                                (int) Math.round((float)newStarMasses.get(i) * 1.75), 0, 0)
                         )
                 );
     }

@@ -17,13 +17,24 @@ public class Star extends GameObject {
     private final String name;
 
     private final int currentMass;
-    private final int maximumMass;
 
-    public Star(UUID id, HexPoint coordinate, String name, int currentMass, int maximumMass) {
+    private final int naturalMassCapacity;
+
+    private final int stabilisation;
+
+    private final int accumulatedInstability;
+
+    public Star(UUID id, HexPoint coordinate, String name, int currentMass, int naturalMassCapacity, int stabilisation, int accumulatedInstability) {
         super(id);
         this.coordinate = coordinate;
         this.name = name;
         this.currentMass = currentMass;
-        this.maximumMass = maximumMass;
+        this.naturalMassCapacity = naturalMassCapacity;
+        this.stabilisation = stabilisation;
+        this.accumulatedInstability = accumulatedInstability;
+    }
+
+    public int getMaximumMass() {
+        return this.getNaturalMassCapacity() + this.getStabilisation();
     }
 }

@@ -1,4 +1,6 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.order;
+
+import uk.wycor.starlines.domain.Ship;
 
 import java.time.Instant;
 

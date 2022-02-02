@@ -2,7 +2,6 @@ package uk.wycor.starlines.persistence.neo4j;
 
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
-import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
@@ -71,9 +70,9 @@ public class Neo4jGameRepository implements GameRepository {
         }
     }
 
-    private int handleCustomQueryResultScalar(Object castable){
+    private long handleCustomQueryResultScalar(Object castable){
         try {
-            return (Integer) castable;
+            return (Long) castable;
         } catch (ClassCastException | NullPointerException e) {
             return 0;
         }
@@ -83,7 +82,7 @@ public class Neo4jGameRepository implements GameRepository {
     public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {
         try (Transaction transaction = ogmSession.beginTransaction(Transaction.Type.READ_WRITE)) {
             var nextClusterID = nextClusterID();
-            starfield.forEach((hexPoint, star) -> ogmSession.save(new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getMaximumMass(), Collections.emptySet())));
+            starfield.forEach((hexPoint, star) -> ogmSession.save(StarEntity.from(star, nextClusterID)));
             transaction.commit();
             return nextClusterID;
         }

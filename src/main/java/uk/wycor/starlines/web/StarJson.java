@@ -16,11 +16,11 @@ public class StarJson {
     private String id;
     private String name;
     private HexPointJson coordinates;
-    private int currentMass;
-    private int maximumMass;
+    private long currentMass;
+    private long maximumMass;
 
     private List<PlayerJson> controllingPlayers;
-    private int controllingPlayerShipCount = 0;
+    private long controllingPlayerProbeCount;
 
     public static StarJson from(Star star) {
         return StarJson
@@ -29,7 +29,7 @@ public class StarJson {
                 .name(star.getName())
                 .coordinates(HexPointJson.from(star.getCoordinate()))
                 .currentMass(star.getCurrentMass())
-                .maximumMass(star.getMaximumMass())
+                .maximumMass(star.getNaturalMassCapacity())
                 .build();
     }
 
@@ -43,7 +43,7 @@ public class StarJson {
                         .map(PlayerJson::from)
                         .collect(Collectors.toList())
                 )
-                .controllingPlayerShipCount(starControl.getControllingProbeCount())
+                .controllingPlayerProbeCount(starControl.getControllingProbeCount())
                 .build();
     }
 }

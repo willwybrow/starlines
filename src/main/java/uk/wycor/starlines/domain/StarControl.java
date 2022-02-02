@@ -10,9 +10,9 @@ public class StarControl {
     @Getter
     private final List<Player> controllingPlayers;
     @Getter
-    private final int controllingProbeCount;
+    private final long controllingProbeCount;
 
-    public StarControl(Star star, List<Player> controllingPlayers, int controllingProbeCount) {
+    public StarControl(Star star, List<Player> controllingPlayers, long controllingProbeCount) {
         this.star = star;
         this.controllingPlayers = controllingPlayers;
         this.controllingProbeCount = controllingProbeCount;

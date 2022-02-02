@@ -20,7 +20,7 @@ public class UniverseManager {
         UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
         StarlinesGame starlinesGame = new StarlinesGame();
 
-        Stream.of("Lim", "Bum", "Nill", "Cram", "Larol", "Endi", "Shin", "Flam").forEach(name -> {
+        Stream.of("Will", "Ben", "Sam", "Fran", "Carol", "Andy", "Lucy", "Wai").forEach(name -> {
             universeManager.expandUniverse();
             starlinesGame.setUpNewPlayer(name);
         });

@@ -27,18 +27,24 @@ public class StarEntity extends Entity {
     CartesianPoint3d coordinate;
     String name;
     Integer currentMass;
-    Integer maximumMass;
+    Integer naturalMassCapacity;
+    Integer stabilisation;
+    Integer accumulatedInstability;
 
     @Relationship(type = "LINKED_TO")
     Set<StarEntity> linkedTo;
 
     public static StarEntity from(Star star, ClusterID inCluster) {
+        // new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getNaturalMassCapacity(), Collections.emptySet()))
         return StarEntity
                 .builder()
                 .clusterID(inCluster.getNumeric())
                 .coordinate(new CartesianPoint3d((double)star.getCoordinate().q(), (double)star.getCoordinate().r(), (double)star.getCoordinate().s()))
+                .name(star.getName())
                 .currentMass(star.getCurrentMass())
-                .maximumMass(star.getMaximumMass())
+                .naturalMassCapacity(star.getNaturalMassCapacity())
+                .stabilisation(star.getStabilisation())
+                .accumulatedInstability(star.getAccumulatedInstability())
                 .build();
     }
 
@@ -49,7 +55,9 @@ public class StarEntity extends Entity {
                         (int)this.coordinate.getY()),
                 this.name,
                 this.currentMass,
-                this.maximumMass
+                this.naturalMassCapacity,
+                this.stabilisation,
+                this.accumulatedInstability
         );
     }
 }

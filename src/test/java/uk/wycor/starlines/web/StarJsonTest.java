@@ -17,7 +17,7 @@ public class StarJsonTest {
                 new HexPoint(0, 0),
                 "Star",
                 1,
-                1);
+                1, 0, 0);
 
         StarJson starJson = StarJson.from(givenStar);
 

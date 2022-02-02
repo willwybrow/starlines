@@ -69,7 +69,7 @@ public class StarlinesGame {
     }
 
     private Star bestStar(Collection<Star> stars) {
-        return Collections.max(stars, Comparator.comparingInt(Star::getMaximumMass));
+        return Collections.max(stars, Comparator.comparingInt(Star::getNaturalMassCapacity));
     }
 
     public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {
