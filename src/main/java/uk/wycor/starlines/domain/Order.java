@@ -1,23 +1,22 @@
 package uk.wycor.starlines.domain;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public enum Order {
-    OPEN_STARLINE(Probe.class),
-    CLOSE_STARLINE(Probe.class, Harvester.class),
-    STABILISE_STAR(Stabiliser.class),
-    INCREASE_MASS(Harvester.class);
+    OPEN_STARLINE(Set.of(Probe.class), Set.of(Star.class)),
+    CLOSE_STARLINE(Set.of(Probe.class, Harvester.class), Collections.emptyList()),
+    STABILISE_STAR(Set.of(Stabiliser.class), Collections.emptyList()),
+    INCREASE_MASS(Set.of(Harvester.class), Collections.emptyList());
 
-    private final Class<? extends Ship>[] capableShips;
+    private final Collection<Class<? extends Ship>> capableShips;
 
     Collection<Class<? extends Ship>> capableShips() {
-        return Set.of(this.capableShips);
+        return this.capableShips;
     }
 
-    @SafeVarargs
-    Order(Class<? extends Ship>... capableShips) {
-
+    Order(Collection<Class<? extends Ship>> capableShips, Collection<Class<? extends GameObject>> validTargets) {
         this.capableShips = capableShips;
     }
 }
