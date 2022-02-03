@@ -27,7 +27,7 @@ public class StarfieldGenerator {
             .filter(hexPoint -> -(CLUSTER_SUBDIVISIONS / 2) <= hexPoint.s() && hexPoint.s() <= (CLUSTER_SUBDIVISIONS / 2))
             .toList();
 
-    static Map<HexPoint, Star> generateRandomStarfield() {
+    static Map<HexPoint, Star> generateRandomStarfield(ClusterID destinationCluster) {
         Random random = new Random();
         var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
@@ -45,6 +45,7 @@ public class StarfieldGenerator {
                         randomPointsForNewStars::get,
                         i -> new Star(
                                 UUID.randomUUID(),
+                                destinationCluster,
                                 randomPointsForNewStars.get(i),
                                 StarNameGenerator.randomName(),
                                 newStarMasses.get(i),

@@ -34,11 +34,11 @@ public class StarEntity extends Entity {
     @Relationship(type = "LINKED_TO")
     Set<StarEntity> linkedTo;
 
-    public static StarEntity from(Star star, ClusterID inCluster) {
+    public static StarEntity from(Star star) {
         // new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getNaturalMassCapacity(), Collections.emptySet()))
         return StarEntity
                 .builder()
-                .clusterID(inCluster.getNumeric())
+                .clusterID(star.getLocation().getNumeric())
                 .coordinate(new CartesianPoint3d((double)star.getCoordinate().q(), (double)star.getCoordinate().r(), (double)star.getCoordinate().s()))
                 .name(star.getName())
                 .currentMass(star.getCurrentMass())
@@ -51,8 +51,9 @@ public class StarEntity extends Entity {
     public Star toStar() {
         return new Star(
                 this.id,
-                new HexPoint((int)this.coordinate.getX(),
-                        (int)this.coordinate.getY()),
+                new ClusterID(this.clusterID),
+                new HexPoint((long)this.coordinate.getX(),
+                        (long)this.coordinate.getY()),
                 this.name,
                 this.currentMass,
                 this.naturalMassCapacity,

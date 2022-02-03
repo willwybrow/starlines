@@ -3,6 +3,8 @@ package uk.wycor.starlines.web;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import uk.wycor.starlines.domain.StarlinesGame;
+import uk.wycor.starlines.web.handler.ClusterHandler;
+import uk.wycor.starlines.web.handler.StarlinesHandler;
 
 
 public class ApiRouter {
@@ -15,6 +17,11 @@ public class ApiRouter {
                 .get("/api/cluster/:clusterID")
                 .produces("application/json")
                 .handler(new ClusterHandler(starlinesGame))
+                .enable();
+        this.router
+            .get("/api/starlines/")
+                .produces("application/json")
+                .handler(new StarlinesHandler(starlinesGame))
                 .enable();
 
         // default 404

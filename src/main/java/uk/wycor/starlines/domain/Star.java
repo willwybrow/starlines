@@ -11,7 +11,7 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 public class Star extends GameObject {
-
+    private final ClusterID location;
     private final HexPoint coordinate;
 
     private final String name;
@@ -24,8 +24,9 @@ public class Star extends GameObject {
 
     private final int accumulatedInstability;
 
-    public Star(UUID id, HexPoint coordinate, String name, int currentMass, int naturalMassCapacity, int stabilisation, int accumulatedInstability) {
+    public Star(UUID id, ClusterID location, HexPoint coordinate, String name, int currentMass, int naturalMassCapacity, int stabilisation, int accumulatedInstability) {
         super(id);
+        this.location = location;
         this.coordinate = coordinate;
         this.name = name;
         this.currentMass = currentMass;

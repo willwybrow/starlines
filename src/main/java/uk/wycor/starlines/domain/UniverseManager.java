@@ -13,7 +13,7 @@ public class UniverseManager {
     }
 
     public void expandUniverse() {
-        gameRepository.populateNextStarfield(StarfieldGenerator.generateRandomStarfield());
+        gameRepository.populateNextStarfield(StarfieldGenerator::generateRandomStarfield);
     }
 
     public static void main(String[] args) {

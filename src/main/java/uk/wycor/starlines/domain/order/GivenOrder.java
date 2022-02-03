@@ -1,10 +1,14 @@
 package uk.wycor.starlines.domain.order;
 
+import lombok.Builder;
+import lombok.Getter;
 import uk.wycor.starlines.domain.Ship;
 
 import java.time.Instant;
 
+@Builder
+@Getter
 public class GivenOrder<T extends Ship> {
-    Instant performByTick;
-    Order order;
+    private final Instant performByTick;
+    private final Order order;
 }

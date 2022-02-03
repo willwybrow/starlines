@@ -7,11 +7,14 @@ import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.StarControl;
+import uk.wycor.starlines.domain.Starline;
+import uk.wycor.starlines.domain.StarlineLeg;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.entity.PlayerEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.ProbeEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.StarEntity;
+import uk.wycor.starlines.persistence.neo4j.entity.StarlineLink;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -62,27 +66,11 @@ public class Neo4jGameRepository implements GameRepository {
                 .collect(Collectors.toSet());
     }
 
-    private <T> List<T> handleCustomQueryResultList(Object resultValue, Class<T> listItemClass) {
-        try {
-            return (List<T>) resultValue;
-        } catch (ClassCastException | NullPointerException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    private long handleCustomQueryResultScalar(Object castable){
-        try {
-            return (Long) castable;
-        } catch (ClassCastException | NullPointerException e) {
-            return 0;
-        }
-    }
-
     @Override
-    public ClusterID populateNextStarfield(Map<HexPoint, Star> starfield) {
+    public ClusterID populateNextStarfield(Function<ClusterID, Map<HexPoint, Star>> starfieldGenerator) {
         try (Transaction transaction = ogmSession.beginTransaction(Transaction.Type.READ_WRITE)) {
             var nextClusterID = nextClusterID();
-            starfield.forEach((hexPoint, star) -> ogmSession.save(StarEntity.from(star, nextClusterID)));
+            starfieldGenerator.apply(nextClusterID).values().stream().map(StarEntity::from).forEach(ogmSession::save);
             transaction.commit();
             return nextClusterID;
         }
@@ -112,19 +100,33 @@ public class Neo4jGameRepository implements GameRepository {
                 .map(StarEntity::toStar)
                 .collect(Collectors.toSet());
     }
-    /*
-    // "best" is for game logic class to decide, NOT repository
+
     @Override
-    public Collection<Star> bestStarsInCluster(ClusterID clusterID) {
-        return StreamSupport
-                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
-                        "WHERE star.clusterID = $clusterID " +
-                        "WITH apoc.agg.maxItems(star, star.currentMass) as maxData " +
-                        "RETURN maxData.items", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
-                .map(StarEntity::toStar)
-                .collect(Collectors.toSet());
+    public Collection<Starline> getStarlinesInUniverse() {
+        return ogmSession.loadAll(StarlineLink.class)
+                .stream()
+                .collect(Collectors.groupingBy(StarlineLink::getStarlineID))
+                .entrySet()
+                .stream()
+                .map(entry -> new Starline(
+                        entry.getKey(),
+                        entry
+                                .getValue()
+                                .stream()
+                                .map(starlineLink -> new StarlineLeg(
+                                        starlineLink
+                                                .getLinkTo()
+                                                .toStar(),
+                                        starlineLink
+                                                .getLinkFrom()
+                                                .toStar(),
+                                        starlineLink
+                                                .getSequesteredMass()
+                                ))
+                                .collect(Collectors.toSet())
+                )).collect(Collectors.toList());
     }
-    */
+
     private Optional<ClusterID> latestGeneratedCluster() {
         try {
             return Optional.of(ogmSession.query(Integer.class, "MATCH (star:Star) RETURN max(star.clusterID) AS latestClusterID", Collections.emptyMap()).iterator().next()).map(ClusterID::new);
@@ -139,5 +141,21 @@ public class Neo4jGameRepository implements GameRepository {
 
     private ClusterID nextClusterID() {
         return latestGeneratedCluster().map(ClusterID::getNumeric).map(i -> i + 1).map(ClusterID::new).orElse(new ClusterID(0));
+    }
+
+    private <T> List<T> handleCustomQueryResultList(Object resultValue, Class<T> listItemClass) {
+        try {
+            return (List<T>) resultValue;
+        } catch (ClassCastException | NullPointerException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private long handleCustomQueryResultScalar(Object castable){
+        try {
+            return (Long) castable;
+        } catch (ClassCastException | NullPointerException e) {
+            return 0;
+        }
     }
 }

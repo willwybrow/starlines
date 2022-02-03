@@ -14,7 +14,7 @@ public class StarJsonTest {
     void starSerialisation() {
         Star givenStar = new Star(
                 UUID.fromString("00000000-0000-0000-0000-000000000000"),
-                new HexPoint(0, 0),
+                location, new HexPoint(0, 0),
                 "Star",
                 1,
                 1, 0, 0);

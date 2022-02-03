@@ -3,6 +3,9 @@ package uk.wycor.starlines.domain;
 import org.neo4j.ogm.config.ClasspathConfigurationSource;
 import org.neo4j.ogm.config.ConfigurationSource;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.domain.order.GivenOrder;
+import uk.wycor.starlines.domain.order.OpenStarline;
+import uk.wycor.starlines.domain.order.Order;
 import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
@@ -57,6 +60,19 @@ public class StarlinesGame {
                 gameRepository::getStarsInCluster,
                 this::bestStar
         ));
+    }
+
+    public Collection<Starline> getAllStarlines() {
+        return this.gameRepository.getStarlinesInUniverse();
+    }
+
+    public Order giveOpenStarlineOrder(Probe assignee, Star target) {
+        var givenOrder = GivenOrder
+                .builder()
+                .order(OpenStarline.builder().target(target).build())
+                .performByTick(this.nextTick())
+                .build();
+        return givenOrder.getOrder();
     }
 
     public void processOrders(Instant tick) {

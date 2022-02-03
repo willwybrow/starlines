@@ -1,19 +1,19 @@
-package uk.wycor.starlines.web;
+package uk.wycor.starlines.web.handler;
 
-import io.vertx.core.Handler;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.StarlinesGame;
+import uk.wycor.starlines.web.ClusterJson;
+import uk.wycor.starlines.web.ClusterMetadataJson;
+import uk.wycor.starlines.web.StarJson;
 
 import java.util.stream.Collectors;
 
-public class ClusterHandler implements Handler<RoutingContext> {
-
-    private final StarlinesGame starlinesGame;
+public class ClusterHandler extends GameHandler {
 
     public ClusterHandler(StarlinesGame starlinesGame) {
-        this.starlinesGame = starlinesGame;
+        super(starlinesGame);
     }
 
     @Override
