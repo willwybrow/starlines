@@ -16,7 +16,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,7 +54,7 @@ public class StarlinesGame {
         */
         return gameRepository.setUpNewPlayer(new NewPlayerWork(
                 () -> new Player(UUID.randomUUID(), playerName),
-                () -> List.of(new Probe(UUID.randomUUID())),
+                () -> IntStream.range(0, 5).mapToObj(i -> new Probe(UUID.randomUUID())).collect(Collectors.toSet()),
                 gameRepository::pickUnoccupiedCluster,
                 gameRepository::getStarsInCluster,
                 this::bestStar
@@ -93,5 +92,20 @@ public class StarlinesGame {
                 .getClusterControllers(clusterID)
                 .stream()
                 .collect(Collectors.toMap(starControl -> starControl.getStar().getCoordinate(), starControl -> starControl));
+    }
+
+    public Map<ClusterID, Map<HexPoint, StarControl>> getClustersByID(Collection<ClusterID> clusterIDs) {
+        return this.gameRepository
+                .getClustersAndControllers(clusterIDs)
+                .entrySet()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue()
+                                        .stream()
+                                        .collect(Collectors.toMap(starControl -> starControl.getStar().getCoordinate(), starControl -> starControl))
+                        )
+                );
     }
 }

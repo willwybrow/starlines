@@ -66,6 +66,30 @@ public class Neo4jGameRepository implements GameRepository {
                 .collect(Collectors.toSet());
     }
 
+    public Set<StarControl> getClusterWithStarsAndProbes(ClusterID clusterID) {
+        /* this should probably just be get all stars plus ships orbiting stars
+        and the controller ought to be worked out in business logic layer
+         */
+        return StreamSupport.stream(ogmSession.query("""
+                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
+                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
+                        RETURN star, ship, player""", Map.of("clusterID", clusterID.getNumeric()))
+                .spliterator(), false)
+                .map(result -> new StarControl(
+                        ((StarEntity) result.get("star")).toStar(),
+                        handleCustomQueryResultList(result.get("controllingPlayers"), PlayerEntity.class).stream().map(PlayerEntity::toPlayer).collect(Collectors.toList()),
+                        handleCustomQueryResultScalar(result.get("numberOfProbes"))
+                ))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<ClusterID, Set<StarControl>> getClustersAndControllers(Collection<ClusterID> clusterIDs) {
+        // TODO make this cleverer
+        return clusterIDs.stream()
+                .collect(Collectors.toMap(c -> c, this::getClusterControllers));
+    }
+
     @Override
     public ClusterID populateNextStarfield(Function<ClusterID, Map<HexPoint, Star>> starfieldGenerator) {
         try (Transaction transaction = ogmSession.beginTransaction(Transaction.Type.READ_WRITE)) {

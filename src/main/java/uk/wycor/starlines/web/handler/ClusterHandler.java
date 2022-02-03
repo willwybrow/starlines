@@ -5,10 +5,6 @@ import io.vertx.ext.web.RoutingContext;
 import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.StarlinesGame;
 import uk.wycor.starlines.web.ClusterJson;
-import uk.wycor.starlines.web.ClusterMetadataJson;
-import uk.wycor.starlines.web.StarJson;
-
-import java.util.stream.Collectors;
 
 public class ClusterHandler extends GameHandler {
 
@@ -18,18 +14,12 @@ public class ClusterHandler extends GameHandler {
 
     @Override
     public void handle(RoutingContext event) {
-        var clusterID = new ClusterID(Integer.parseInt(event.pathParam("clusterID")));
-        var starMap = starlinesGame.getClusterByID(clusterID);
+        var clusterID = new ClusterID(Long.parseLong(event.pathParam("clusterID")));
+        var starControlMap = starlinesGame.getClusterByID(clusterID);
         event.response()
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(
-                        new ClusterJson(
-                                new ClusterMetadataJson(clusterID),
-                                starMap
-                                        .values()
-                                        .stream()
-                                        .map(StarJson::from)
-                                        .collect(Collectors.toList()))
+                        ClusterJson.from(clusterID, starControlMap)
                 ));
     }
 }

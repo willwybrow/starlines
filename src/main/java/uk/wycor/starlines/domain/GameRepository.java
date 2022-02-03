@@ -12,6 +12,9 @@ public interface GameRepository {
     Player setUpNewPlayer(NewPlayerWork newPlayerWork);
 
     Set<StarControl> getClusterControllers(ClusterID clusterID);
+
+    Map<ClusterID, Set<StarControl>> getClustersAndControllers(Collection<ClusterID> clusterIDs);
+
     ClusterID populateNextStarfield(Function<ClusterID, Map<HexPoint, Star>> starfieldGenerator);
 
     ClusterID pickUnoccupiedCluster();

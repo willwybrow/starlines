@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import uk.wycor.starlines.domain.StarlinesGame;
 import uk.wycor.starlines.web.handler.ClusterHandler;
+import uk.wycor.starlines.web.handler.ClustersHandler;
 import uk.wycor.starlines.web.handler.StarlinesHandler;
 
 
@@ -17,6 +18,11 @@ public class ApiRouter {
                 .get("/api/cluster/:clusterID")
                 .produces("application/json")
                 .handler(new ClusterHandler(starlinesGame))
+                .enable();
+        this.router
+                .get("/api/clusters/")
+                .produces("application/json")
+                .handler(new ClustersHandler(starlinesGame))
                 .enable();
         this.router
             .get("/api/starlines/")
