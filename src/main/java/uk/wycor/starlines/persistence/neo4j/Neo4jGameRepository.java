@@ -1,5 +1,7 @@
 package uk.wycor.starlines.persistence.neo4j;
 
+import org.neo4j.ogm.cypher.ComparisonOperator;
+import org.neo4j.ogm.cypher.Filter;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import uk.wycor.starlines.domain.ClusterID;
@@ -7,6 +9,7 @@ import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.StarControl;
+import uk.wycor.starlines.domain.StarProbeOrbit;
 import uk.wycor.starlines.domain.Starline;
 import uk.wycor.starlines.domain.StarlineLeg;
 import uk.wycor.starlines.domain.geometry.HexPoint;
@@ -66,20 +69,12 @@ public class Neo4jGameRepository implements GameRepository {
                 .collect(Collectors.toSet());
     }
 
-    public Set<StarControl> getClusterWithStarsAndProbes(ClusterID clusterID) {
-        /* this should probably just be get all stars plus ships orbiting stars
-        and the controller ought to be worked out in business logic layer
-         */
-        return StreamSupport.stream(ogmSession.query("""
-                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
-                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
-                        RETURN star, ship, player""", Map.of("clusterID", clusterID.getNumeric()))
-                .spliterator(), false)
-                .map(result -> new StarControl(
-                        ((StarEntity) result.get("star")).toStar(),
-                        handleCustomQueryResultList(result.get("controllingPlayers"), PlayerEntity.class).stream().map(PlayerEntity::toPlayer).collect(Collectors.toList()),
-                        handleCustomQueryResultScalar(result.get("numberOfProbes"))
-                ))
+    @Override
+    public Set<StarProbeOrbit> getClusterWithStarsAndProbes(ClusterID clusterID) {
+        return ogmSession
+                .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.EQUALS, clusterID.getNumeric()), 3)
+                .stream()
+                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.shipsInOrbit()))
                 .collect(Collectors.toSet());
     }
 

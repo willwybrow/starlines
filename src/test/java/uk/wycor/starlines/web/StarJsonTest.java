@@ -2,6 +2,7 @@ package uk.wycor.starlines.web;
 
 import io.vertx.core.json.Json;
 import org.junit.jupiter.api.Test;
+import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
@@ -14,7 +15,8 @@ public class StarJsonTest {
     void starSerialisation() {
         Star givenStar = new Star(
                 UUID.fromString("00000000-0000-0000-0000-000000000000"),
-                location, new HexPoint(0, 0),
+                new ClusterID(0),
+                new HexPoint(0, 0),
                 "Star",
                 1,
                 1, 0, 0);

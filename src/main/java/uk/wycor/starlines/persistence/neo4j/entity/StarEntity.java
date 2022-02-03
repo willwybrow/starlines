@@ -10,10 +10,17 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 import org.neo4j.ogm.types.spatial.CartesianPoint3d;
 import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.Probe;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.neo4j.ogm.annotation.Relationship.INCOMING;
+import static org.neo4j.ogm.annotation.Relationship.UNDIRECTED;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -31,8 +38,11 @@ public class StarEntity extends Entity {
     Integer stabilisation;
     Integer accumulatedInstability;
 
-    @Relationship(type = "LINKED_TO")
+    @Relationship(type = "LINKED_TO", direction = UNDIRECTED)
     Set<StarEntity> linkedTo;
+
+    @Relationship(type = "ORBITING", direction = INCOMING)
+    Set<ProbeEntity> orbitedByProbes;
 
     public static StarEntity from(Star star) {
         // new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getNaturalMassCapacity(), Collections.emptySet()))
@@ -60,6 +70,15 @@ public class StarEntity extends Entity {
                 this.stabilisation,
                 this.accumulatedInstability
         );
+    }
+
+    public Set<Probe> shipsInOrbit() {
+        return Optional
+                .ofNullable(this.orbitedByProbes)
+                .orElseGet(Collections::emptySet)
+                .stream()
+                .map(ProbeEntity::toShip)
+                .collect(Collectors.toSet());
     }
 }
 

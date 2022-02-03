@@ -13,6 +13,8 @@ public interface GameRepository {
 
     Set<StarControl> getClusterControllers(ClusterID clusterID);
 
+    Set<StarProbeOrbit> getClusterWithStarsAndProbes(ClusterID clusterID);
+
     Map<ClusterID, Set<StarControl>> getClustersAndControllers(Collection<ClusterID> clusterIDs);
 
     ClusterID populateNextStarfield(Function<ClusterID, Map<HexPoint, Star>> starfieldGenerator);

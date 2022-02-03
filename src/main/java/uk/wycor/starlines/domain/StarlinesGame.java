@@ -52,9 +52,10 @@ public class StarlinesGame {
         3. find a vacant cluster and pick the best star
         4. save the player's starting ships to the above star
         */
+        Player newPlayer = new Player(UUID.randomUUID(), playerName);
         return gameRepository.setUpNewPlayer(new NewPlayerWork(
-                () -> new Player(UUID.randomUUID(), playerName),
-                () -> IntStream.range(0, 5).mapToObj(i -> new Probe(UUID.randomUUID())).collect(Collectors.toSet()),
+                () -> newPlayer,
+                () -> IntStream.range(0, 5).mapToObj(i -> new Probe(UUID.randomUUID(), newPlayer)).collect(Collectors.toSet()),
                 gameRepository::pickUnoccupiedCluster,
                 gameRepository::getStarsInCluster,
                 this::bestStar
@@ -88,10 +89,36 @@ public class StarlinesGame {
     }
 
     public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {
-        return this.gameRepository
-                .getClusterControllers(clusterID)
+        return this.gameRepository.getClusterWithStarsAndProbes(clusterID)
                 .stream()
-                .collect(Collectors.toMap(starControl -> starControl.getStar().getCoordinate(), starControl -> starControl));
+                .collect(Collectors.toMap(starProbeOrbit -> starProbeOrbit.getStar().getCoordinate(), this::getStarControl));
+    }
+
+    private StarControl getStarControl(StarProbeOrbit starProbeOrbit) {
+        return starProbeOrbit
+                .getOrbitingProbes()
+                .stream()
+                .collect(Collectors.groupingBy(ship -> ship.ownedBy))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().size()))
+                .values()
+                .stream()
+                .max(Integer::compare)
+                .map(maxNumberOfShips -> new StarControl(
+                        starProbeOrbit.getStar(),
+                        starProbeOrbit
+                        .getOrbitingProbes()
+                        .stream()
+                        .collect(Collectors.groupingBy(ship -> ship.ownedBy))
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> entry.getValue().size() == maxNumberOfShips)
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toSet()),
+                        maxNumberOfShips
+                )).orElse(new StarControl(starProbeOrbit.getStar(), Collections.emptyList(), 0));
+
     }
 
     public Map<ClusterID, Map<HexPoint, StarControl>> getClustersByID(Collection<ClusterID> clusterIDs) {

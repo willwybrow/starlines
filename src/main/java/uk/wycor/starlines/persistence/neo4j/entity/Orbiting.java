@@ -10,7 +10,7 @@ import org.neo4j.ogm.annotation.StartNode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-@RelationshipEntity(type = "LINKED_TO")
+@RelationshipEntity(type = "ORBITING")
 public class Orbiting extends Entity {
 
     @StartNode
