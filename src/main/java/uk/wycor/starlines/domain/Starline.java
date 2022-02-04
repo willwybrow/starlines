@@ -8,7 +8,7 @@ import java.util.UUID;
 
 
 @Getter
-@EqualsAndHashCode(callSuper = true)
+
 public class Starline extends GameObject {
     private final Set<StarlineLeg> network;
 

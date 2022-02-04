@@ -1,7 +1,6 @@
 package uk.wycor.starlines.persistence.neo4j.entity;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,11 +11,11 @@ import uk.wycor.starlines.domain.Ship;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
+
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder
 @NodeEntity(label = "Ship")
+@SuperBuilder
 public abstract class ShipEntity extends Entity {
 
     @Relationship(type = "ORBITING")

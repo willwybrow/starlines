@@ -1,6 +1,6 @@
 package uk.wycor.starlines.persistence.neo4j.entity;
 
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,12 +11,11 @@ import uk.wycor.starlines.domain.Probe;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@SuperBuilder
+@AllArgsConstructor
 @NodeEntity(label = "Probe")
+@SuperBuilder
 public class ProbeEntity extends Entity {
-
     @Relationship(type = "ORBITING")
     StarEntity orbiting;
 

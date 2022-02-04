@@ -74,7 +74,7 @@ public class Neo4jGameRepository implements GameRepository {
         return ogmSession
                 .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.EQUALS, clusterID.getNumeric()), 3)
                 .stream()
-                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.probesInOrbit()))
+                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.shipsInOrbit()))
                 .collect(Collectors.toSet());
     }
 
