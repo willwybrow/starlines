@@ -8,7 +8,6 @@ import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
-import uk.wycor.starlines.domain.StarControl;
 import uk.wycor.starlines.domain.StarProbeOrbit;
 import uk.wycor.starlines.domain.Starline;
 import uk.wycor.starlines.domain.StarlineLeg;
@@ -27,11 +26,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class Neo4jGameRepository implements GameRepository {
     protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
+    Logger logger = Logger.getLogger(Neo4jGameRepository.class.getName());
 
     @Override
     public Player setUpNewPlayer(NewPlayerWork newPlayerWork) {
@@ -50,27 +51,7 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     @Override
-    public Set<StarControl> getClusterControllers(ClusterID clusterID) {
-        /* this should probably just be get all stars plus ships orbiting stars
-        and the controller ought to be worked out in business logic layer
-         */
-        return StreamSupport.stream(ogmSession.query("""
-                        MATCH (star:Star) WHERE star.clusterID = $clusterID\s
-                        OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe)-[ob:OWNED_BY]->(player:Player)
-                        WITH star, player, count(ship) AS playerProbes\s
-                        WITH star, apoc.agg.maxItems(player, playerProbes) AS maxData\s
-                        RETURN star, maxData.items AS controllingPlayers, maxData.value AS numberOfProbes""", Map.of("clusterID", clusterID.getNumeric()))
-                .spliterator(), false)
-                .map(result -> new StarControl(
-                        ((StarEntity) result.get("star")).toStar(),
-                        handleCustomQueryResultList(result.get("controllingPlayers"), PlayerEntity.class).stream().map(PlayerEntity::toPlayer).collect(Collectors.toList()),
-                        handleCustomQueryResultScalar(result.get("numberOfProbes"))
-                ))
-                .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<StarProbeOrbit> getClusterWithStarsAndProbes(ClusterID clusterID) {
+    public Set<StarProbeOrbit> getStarsAndOrbitingProbesInCluster(ClusterID clusterID) {
         return ogmSession
                 .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.EQUALS, clusterID.getNumeric()), 3)
                 .stream()
@@ -79,10 +60,12 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     @Override
-    public Map<ClusterID, Set<StarControl>> getClustersAndControllers(Collection<ClusterID> clusterIDs) {
-        // TODO make this cleverer
-        return clusterIDs.stream()
-                .collect(Collectors.toMap(c -> c, this::getClusterControllers));
+    public Map<ClusterID, Set<StarProbeOrbit>> getStarsAndOrbitingProbesInClusters(Set<ClusterID> clusterIDs) {
+        return ogmSession
+                .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.IN, clusterIDs.stream().map(ClusterID::getNumeric).collect(Collectors.toSet())), 3)
+                .stream()
+                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.shipsInOrbit()))
+                .collect(Collectors.groupingBy(starProbeOrbit -> starProbeOrbit.getStar().getLocation(), Collectors.toSet()));
     }
 
     @Override

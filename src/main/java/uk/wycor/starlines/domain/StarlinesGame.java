@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -89,9 +90,23 @@ public class StarlinesGame {
     }
 
     public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {
-        return this.gameRepository.getClusterWithStarsAndProbes(clusterID)
+        return this.gameRepository.getStarsAndOrbitingProbesInClusters(Set.of(clusterID))
+                .get(clusterID)
                 .stream()
                 .collect(Collectors.toMap(starProbeOrbit -> starProbeOrbit.getStar().getCoordinate(), this::getStarControl));
+    }
+
+    public Map<ClusterID, Map<HexPoint, StarControl>> getClustersByID(Set<ClusterID> clusterIDs) {
+        return this.gameRepository
+                .getStarsAndOrbitingProbesInClusters(clusterIDs)
+                .entrySet()
+                .stream()
+                .collect(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue()
+                                        .stream()
+                                        .collect(Collectors.toMap(starProbeOrbit -> starProbeOrbit.getStar().getCoordinate(), this::getStarControl))));
     }
 
     private StarControl getStarControl(StarProbeOrbit starProbeOrbit) {
@@ -108,31 +123,16 @@ public class StarlinesGame {
                 .map(maxNumberOfShips -> new StarControl(
                         starProbeOrbit.getStar(),
                         starProbeOrbit
-                        .getOrbitingProbes()
-                        .stream()
-                        .collect(Collectors.groupingBy(ship -> ship.ownedBy))
-                        .entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue().size() == maxNumberOfShips)
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.toSet()),
+                                .getOrbitingProbes()
+                                .stream()
+                                .collect(Collectors.groupingBy(ship -> ship.ownedBy))
+                                .entrySet()
+                                .stream()
+                                .filter(entry -> entry.getValue().size() == maxNumberOfShips)
+                                .map(Map.Entry::getKey)
+                                .collect(Collectors.toSet()),
                         maxNumberOfShips
                 )).orElse(new StarControl(starProbeOrbit.getStar(), Collections.emptyList(), 0));
 
-    }
-
-    public Map<ClusterID, Map<HexPoint, StarControl>> getClustersByID(Collection<ClusterID> clusterIDs) {
-        return this.gameRepository
-                .getClustersAndControllers(clusterIDs)
-                .entrySet()
-                .stream()
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> e.getValue()
-                                        .stream()
-                                        .collect(Collectors.toMap(starControl -> starControl.getStar().getCoordinate(), starControl -> starControl))
-                        )
-                );
     }
 }

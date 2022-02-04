@@ -11,11 +11,9 @@ import java.util.function.Function;
 public interface GameRepository {
     Player setUpNewPlayer(NewPlayerWork newPlayerWork);
 
-    Set<StarControl> getClusterControllers(ClusterID clusterID);
+    Set<StarProbeOrbit> getStarsAndOrbitingProbesInCluster(ClusterID clusterID);
 
-    Set<StarProbeOrbit> getClusterWithStarsAndProbes(ClusterID clusterID);
-
-    Map<ClusterID, Set<StarControl>> getClustersAndControllers(Collection<ClusterID> clusterIDs);
+    Map<ClusterID, Set<StarProbeOrbit>> getStarsAndOrbitingProbesInClusters(Set<ClusterID> clusterIDs);
 
     ClusterID populateNextStarfield(Function<ClusterID, Map<HexPoint, Star>> starfieldGenerator);
 

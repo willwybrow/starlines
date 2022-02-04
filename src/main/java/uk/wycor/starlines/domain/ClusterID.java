@@ -7,6 +7,7 @@ import uk.wycor.starlines.domain.geometry.Szudzik;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -63,5 +64,18 @@ public class ClusterID {
                 .map(ClusterID::new)
                 .collect(Collectors.toList());
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClusterID clusterID = (ClusterID) o;
+        return numeric == clusterID.numeric;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numeric);
     }
 }
