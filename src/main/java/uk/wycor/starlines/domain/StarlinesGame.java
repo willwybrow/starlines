@@ -90,8 +90,7 @@ public class StarlinesGame {
     }
 
     public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {
-        return this.gameRepository.getStarsAndOrbitingProbesInClusters(Set.of(clusterID))
-                .get(clusterID)
+        return this.gameRepository.getStarsAndOrbitingProbesInCluster(clusterID)
                 .stream()
                 .collect(Collectors.toMap(starProbeOrbit -> starProbeOrbit.getStar().getCoordinate(), this::getStarControl));
     }

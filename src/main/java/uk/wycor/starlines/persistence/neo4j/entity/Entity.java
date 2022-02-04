@@ -1,6 +1,8 @@
 package uk.wycor.starlines.persistence.neo4j.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.neo4j.ogm.annotation.GeneratedValue;
 import org.neo4j.ogm.annotation.Id;
@@ -11,13 +13,15 @@ import org.neo4j.ogm.typeconversion.UuidStringConverter;
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
+@Setter
 @AllArgsConstructor
 @SuperBuilder
-abstract class Entity {
+public abstract class Entity {
     @Id
     @GeneratedValue(strategy = UuidStrategy.class)
     @Convert(UuidStringConverter.class)
-    final UUID id;
+    UUID id;
 
     public Entity() {
         this.id = UUID.randomUUID();

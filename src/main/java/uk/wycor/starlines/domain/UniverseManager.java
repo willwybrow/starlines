@@ -26,7 +26,7 @@ public class UniverseManager {
             starlinesGame.setUpNewPlayer(name);
         });
 
-        IntStream.range(0, 1001).forEach(i -> universeManager.expandUniverse());
+        IntStream.range(0, 100).forEach(i -> universeManager.expandUniverse());
 
         starlinesGame.getClusterByID(new ClusterID(0));
     }

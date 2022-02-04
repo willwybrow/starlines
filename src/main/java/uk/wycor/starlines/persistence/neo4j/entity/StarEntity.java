@@ -42,7 +42,7 @@ public class StarEntity extends Entity {
     Set<StarEntity> linkedTo;
 
     @Relationship(type = "ORBITING", direction = INCOMING)
-    Set<ProbeEntity> orbitedByProbes;
+    Set<ProbeEntity> probesInOrbit;
 
     public static StarEntity from(Star star) {
         // new StarEntity(nextClusterID.getNumeric(), new CartesianPoint3d(hexPoint.q(), hexPoint.r(), hexPoint.s()), star.getName(), star.getCurrentMass(), star.getNaturalMassCapacity(), Collections.emptySet()))
@@ -72,9 +72,9 @@ public class StarEntity extends Entity {
         );
     }
 
-    public Set<Probe> shipsInOrbit() {
+    public Set<Probe> probesInOrbit() {
         return Optional
-                .ofNullable(this.orbitedByProbes)
+                .ofNullable(this.probesInOrbit)
                 .orElseGet(Collections::emptySet)
                 .stream()
                 .map(ProbeEntity::toShip)

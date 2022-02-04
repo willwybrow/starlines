@@ -20,7 +20,6 @@ import uk.wycor.starlines.persistence.neo4j.entity.StarlineLink;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -43,8 +42,16 @@ public class Neo4jGameRepository implements GameRepository {
             var newPlayer = newPlayerWork.newPlayerSupplier().get();
             var newPlayerEntity = PlayerEntity.fromPlayer(newPlayer, starEntity);
             ogmSession.save(newPlayerEntity);
-            newPlayerWork.startingProbeSupplier().get()
-                    .forEach(probe -> ogmSession.save(ProbeEntity.builder().id(probe.getId()).orbiting(starEntity).ownedBy(newPlayerEntity).build()));
+            ogmSession.save(newPlayerWork.startingProbeSupplier()
+                    .get()
+                    .stream()
+                    .map(probe -> ProbeEntity
+                            .builder()
+                            .id(probe.getId())
+                            .ownedBy(newPlayerEntity)
+                            .orbiting(starEntity)
+                            .build()
+                    ).collect(Collectors.toSet()), 2);
             ogmTransaction.commit();
             return newPlayer;
         }
@@ -55,7 +62,7 @@ public class Neo4jGameRepository implements GameRepository {
         return ogmSession
                 .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.EQUALS, clusterID.getNumeric()), 3)
                 .stream()
-                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.shipsInOrbit()))
+                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.probesInOrbit()))
                 .collect(Collectors.toSet());
     }
 
@@ -64,7 +71,7 @@ public class Neo4jGameRepository implements GameRepository {
         return ogmSession
                 .loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.IN, clusterIDs.stream().map(ClusterID::getNumeric).collect(Collectors.toSet())), 3)
                 .stream()
-                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.shipsInOrbit()))
+                .map(starEntity -> new StarProbeOrbit(starEntity.toStar(), starEntity.probesInOrbit()))
                 .collect(Collectors.groupingBy(starProbeOrbit -> starProbeOrbit.getStar().getLocation(), Collectors.toSet()));
     }
 
@@ -84,7 +91,7 @@ public class Neo4jGameRepository implements GameRepository {
             return new ClusterID(
                     ogmSession.query(Integer.class,
                             """ 
-                                    MATCH (star:Star) OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Ship) WITH star.clusterID as clusterID, count(star) AS starsInCluster, count(ship) AS shipsInCluster WHERE starsInCluster > 0 AND shipsInCluster = 0 RETURN clusterID;
+                                    MATCH (star:Star) OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe) WITH star.clusterID as clusterID, count(star) AS starsInCluster, count(ship) AS shipsInCluster WHERE starsInCluster > 0 AND shipsInCluster = 0 RETURN clusterID;
                                     """,
                             Collections.emptyMap()
                     ).iterator().next());
@@ -143,21 +150,5 @@ public class Neo4jGameRepository implements GameRepository {
 
     private ClusterID nextClusterID() {
         return latestGeneratedCluster().map(ClusterID::getNumeric).map(i -> i + 1).map(ClusterID::new).orElse(new ClusterID(0));
-    }
-
-    private <T> List<T> handleCustomQueryResultList(Object resultValue, Class<T> listItemClass) {
-        try {
-            return (List<T>) resultValue;
-        } catch (ClassCastException | NullPointerException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    private long handleCustomQueryResultScalar(Object castable){
-        try {
-            return (Long) castable;
-        } catch (ClassCastException | NullPointerException e) {
-            return 0;
-        }
     }
 }

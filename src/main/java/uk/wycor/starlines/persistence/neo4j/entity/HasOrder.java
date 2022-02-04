@@ -12,7 +12,7 @@ import org.neo4j.ogm.annotation.StartNode;
 @Setter
 @NoArgsConstructor
 @RelationshipEntity(type = "HAS_ORDER")
-public class HasOrder extends Entity {
+public class HasOrder extends Relationship {
     @StartNode
     ShipEntity ship;
     @EndNode

@@ -13,6 +13,9 @@ public class Neo4jSessionFactory {
             .useNativeTypes()
             .build();
     private final static SessionFactory sessionFactory = new SessionFactory(configuration, "uk.wycor.starlines.persistence.neo4j");
+    static {
+        sessionFactory.register(new PreSaveEventListener());
+    }
     private static final Neo4jSessionFactory factory = new Neo4jSessionFactory();
 
     public static Neo4jSessionFactory getInstance() {
