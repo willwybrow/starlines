@@ -1,7 +1,8 @@
 package uk.wycor.starlines.web;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.StarControl;
 
@@ -9,7 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Builder(toBuilder = true)
-@Data
+@Getter
+@Setter
 // @Accessors(fluent = true, chain = true)
 public class StarJson {
 

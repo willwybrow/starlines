@@ -1,7 +1,8 @@
 package uk.wycor.starlines.web;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import uk.wycor.starlines.domain.ClusterID;
 import uk.wycor.starlines.domain.StarControl;
 import uk.wycor.starlines.domain.geometry.HexPoint;
@@ -10,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class ClusterJson {
     ClusterMetadataJson metadata;

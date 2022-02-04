@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
+
 public class Star extends GameObject {
     private final ClusterID location;
     private final HexPoint coordinate;

@@ -7,7 +7,7 @@ import uk.wycor.starlines.domain.ClusterID;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Getter
 public class ClusterMetadataJson extends ClusterIDJson {
     final List<ClusterIDJson> neighbours;
