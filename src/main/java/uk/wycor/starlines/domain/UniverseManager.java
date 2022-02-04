@@ -2,6 +2,7 @@ package uk.wycor.starlines.domain;
 
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class UniverseManager {
@@ -20,10 +21,12 @@ public class UniverseManager {
         UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
         StarlinesGame starlinesGame = new StarlinesGame();
 
-        Stream.of("Guy", "Gal", "Buy", "Bal", "Huy", "Hal").forEach(name -> {
+        Stream.of("Guy", "Gal", "Buy", "Bal", "Huy", "Hal", "Duy", "Dal", "Fuy", "Fal", "Juy", "Jal").forEach(name -> {
             universeManager.expandUniverse();
             starlinesGame.setUpNewPlayer(name);
         });
+
+        IntStream.range(0, 1001).forEach(i -> universeManager.expandUniverse());
 
         starlinesGame.getClusterByID(new ClusterID(0));
     }
