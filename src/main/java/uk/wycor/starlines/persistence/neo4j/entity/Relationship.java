@@ -22,7 +22,7 @@ public abstract class Relationship {
     @Id
     @GeneratedValue(strategy = UuidStrategy.class)
     @Convert(UuidStringConverter.class)
-    final UUID id;
+    UUID id;
 
     public Relationship() {
         this.id = UUID.randomUUID();

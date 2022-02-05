@@ -22,6 +22,12 @@ class HexPointTest {
         assertEquals(new HexPoint(0, 0), new HexPoint(0, 0));
     }
 
+    @ParameterizedTest
+    @MethodSource("q1r1q2r2AndDistanceBetweenThem")
+    void distanceCalculation(long q1, long r1, long q2, long r2, long expectedDistance) {
+        assertEquals(expectedDistance, new HexPoint(q1, r1).distanceTo(new HexPoint(q2, r2)));
+    }
+
     private static Stream<Arguments> sForValidQAndR() {
         // these are all the coordinates on https://www.redblobgames.com/grids/hexagons/
         return Stream.of(
@@ -62,6 +68,17 @@ class HexPointTest {
                 Arguments.of(-3, 2, 1),
                 Arguments.of(-3, 1, 2),
                 Arguments.of(-3, 0, 3)
+        );
+    }
+
+    private static Stream<Arguments> q1r1q2r2AndDistanceBetweenThem() {
+        return Stream.of(
+                Arguments.of(0, 0, 0, 0, 0),
+                Arguments.of(0, -1, 0, -1, 0),
+                Arguments.of(0, 0, +1, -1, 1),
+                Arguments.of(-1, 1, +1, -1, 2),
+                Arguments.of(-2, +2, +1, -1, 3),
+                Arguments.of(-2, +2, +2, -2, 4)
         );
     }
 }

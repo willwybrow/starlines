@@ -1,6 +1,7 @@
 package uk.wycor.starlines.domain.geometry;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public record HexPoint(long q, long r) {
     public long s() {
@@ -9,6 +10,14 @@ public record HexPoint(long q, long r) {
 
     public HexPoint translate(long deltaQ, long deltaR) {
         return new HexPoint(this.q + deltaQ, this.r + deltaR);
+    }
+
+    public Long distanceTo(HexPoint b) {
+        var deltaQ = this.q() - b.q();
+        var deltaR = this.r() - b.r();
+        var deltaS = this.s() - b.s();
+
+        return Stream.of(deltaQ, deltaR, deltaS).map(Math::abs).mapToLong(Long::longValue).sum() / 2;
     }
 
     @Override

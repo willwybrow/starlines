@@ -25,6 +25,10 @@ public class ClusterID {
         this.numeric = ClusterID.clusterID(coordinates);
     }
 
+    public Long distanceTo(ClusterID otherCluster) {
+        return this.coordinates.distanceTo(otherCluster.coordinates);
+    }
+
     static final List<Pair> AXIAL_DIRECTION_VECTORS = Arrays.asList(
             new Pair(1, -1),
             new Pair(1, 0),

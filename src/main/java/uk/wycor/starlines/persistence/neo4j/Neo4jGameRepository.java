@@ -2,17 +2,16 @@ package uk.wycor.starlines.persistence.neo4j;
 
 import org.neo4j.ogm.cypher.ComparisonOperator;
 import org.neo4j.ogm.cypher.Filter;
-import org.neo4j.ogm.cypher.function.FilterFunction;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import uk.wycor.starlines.domain.ClusterID;
-import uk.wycor.starlines.domain.GameRepository;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.Star;
 import uk.wycor.starlines.domain.StarProbeOrbit;
 import uk.wycor.starlines.domain.Starline;
 import uk.wycor.starlines.domain.StarlineLeg;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.persistence.GameRepository;
 import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.entity.PlayerEntity;
 import uk.wycor.starlines.persistence.neo4j.entity.ProbeEntity;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -113,7 +113,7 @@ public class Neo4jGameRepository implements GameRepository {
 
     @Override
     public Collection<Starline> getStarlinesInUniverse() {
-        return ogmSession.loadAll(StarlineLink.class)
+        return ogmSession.loadAll(StarlineLink.class, 1)
                 .stream()
                 .collect(Collectors.groupingBy(StarlineLink::getStarlineID))
                 .entrySet()
@@ -135,6 +135,38 @@ public class Neo4jGameRepository implements GameRepository {
                                 ))
                                 .collect(Collectors.toSet())
                 )).collect(Collectors.toList());
+    }
+
+    public Starline getStarline(UUID id) {
+        return new Starline(id, ogmSession.loadAll(StarlineLink.class, new Filter("starlineID", ComparisonOperator.EQUALS, id), 1)
+                .stream()
+                .map(starlineLink -> new StarlineLeg(starlineLink.getLinkFrom().toStar(), starlineLink.getLinkTo().toStar(), starlineLink.getSequesteredMass()))
+                .collect(Collectors.toSet())
+        );
+    }
+
+    @Override
+    public void deleteStarline(Starline starline) {
+        ogmSession.delete(
+                StarlineLink.class,
+                Collections.singleton(new Filter("starlineID", ComparisonOperator.EQUALS, starline.getId())),
+                false
+        );
+    }
+
+    @Override
+    public Starline saveStarline(Starline newStarline) {
+        ogmSession.save(
+                newStarline.getNetwork().stream().map(starlineLeg -> StarlineLink
+                        .builder()
+                        .starlineID(newStarline.getId())
+                        .linkFrom(StarEntity.from(starlineLeg.getStarA()))
+                        .linkTo(StarEntity.from(starlineLeg.getStarB()))
+                        .sequesteredMass(starlineLeg.getSequesteredMass())
+                        .build()
+                ).collect(Collectors.toSet())
+        );
+        return getStarline(newStarline.getId());
     }
 
     private Optional<ClusterID> latestGeneratedCluster() {

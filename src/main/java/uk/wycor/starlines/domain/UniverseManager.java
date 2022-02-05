@@ -1,5 +1,7 @@
 package uk.wycor.starlines.domain;
 
+import uk.wycor.starlines.RandomSample;
+import uk.wycor.starlines.persistence.GameRepository;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
 import java.util.Arrays;
@@ -24,7 +26,7 @@ public class UniverseManager {
     public static void main(String[] args) {
         UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
         StarlinesGame starlinesGame = new StarlinesGame();
-
+        /*
         PlayerNameGenerator.names().forEach(name -> {
             universeManager.expandUniverse();
             var player = starlinesGame.setUpNewPlayer(name);
@@ -32,8 +34,13 @@ public class UniverseManager {
         });
 
         universeManager.expandUniverse();
+        */
 
-        starlinesGame.getClusterByID(new ClusterID(0));
+        var oneStar = RandomSample.pick(universeManager.gameRepository.getStarsAndOrbitingProbesInCluster(new ClusterID(0)));
+        var anotherStar = RandomSample.pick(universeManager.gameRepository.getStarsAndOrbitingProbesInCluster(new ClusterID(14)));
+
+        var starline = starlinesGame.openStarline(oneStar.getStar(), anotherStar.getStar(), true);
+        logger.info(String.format("Opened starline ID %s between star %d:%s and %d:%s", starline.getId(), oneStar.getStar().getLocation().getNumeric(), oneStar.getStar().getName(), anotherStar.getStar().getLocation().getNumeric(), anotherStar.getStar().getName()));
     }
 
     static class PlayerNameGenerator {

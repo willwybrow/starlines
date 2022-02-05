@@ -6,6 +6,7 @@ import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.domain.order.GivenOrder;
 import uk.wycor.starlines.domain.order.OpenStarline;
 import uk.wycor.starlines.domain.order.Order;
+import uk.wycor.starlines.persistence.GameRepository;
 import uk.wycor.starlines.persistence.NewPlayerWork;
 import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
 
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -76,6 +78,70 @@ public class StarlinesGame {
         return this.gameRepository.getStarlinesInUniverse();
     }
 
+    public Starline openStarline(Star fromStar, Star toStar, boolean mutual) {
+        /*
+        1. validate the starline can be opened between the two stars and calculate the mass that'll be "sequestered" in it
+        2. are either of the two stars in starlines already? if they are both in different starlines the starlines will need to be merged
+        3. save all changes
+         */
+        long distance = fromStar.getLocation().distanceTo(toStar.getLocation());
+        long starlineMassCost = distance * 2;
+        // each star must have the cost of a starline + 2 in mass before a starline can be opened
+        // even if it's opened mutually
+        if (fromStar.getCurrentMass() < starlineMassCost + 2) {
+            // return failed
+            return null;
+        }
+        if (toStar.getCurrentMass() < starlineMassCost + 2) {
+            return null;
+        }
+        if (mutual) {
+            fromStar.loseMass(starlineMassCost / 2);
+            toStar.loseMass(starlineMassCost / 2);
+        } else {
+            fromStar.loseMass(starlineMassCost / 2);
+        }
+
+        StarlineLeg newStarlineLeg = new StarlineLeg(fromStar, toStar, starlineMassCost);
+
+        Optional<Starline> fromStarInStarline = inStarline(fromStar);
+        Optional<Starline> toStarInStarline = inStarline(toStar);
+
+        if (fromStarInStarline.isPresent() && toStarInStarline.isPresent()) {
+            return mergeStarline(fromStarInStarline.get(), toStarInStarline.get(), newStarlineLeg);
+        } else if (fromStarInStarline.isPresent()) {
+            return addStarToStarline(fromStarInStarline.get(), newStarlineLeg);
+        } else if (toStarInStarline.isPresent()) {
+            return addStarToStarline(toStarInStarline.get(), newStarlineLeg);
+        } else {
+            return createNewStarline(newStarlineLeg);
+        }
+    }
+
+    private Starline createNewStarline(StarlineLeg newStarlineLeg) {
+        return gameRepository.saveStarline(new Starline(UUID.randomUUID(), Set.of(newStarlineLeg)));
+    }
+
+    private Starline addStarToStarline(Starline starline, StarlineLeg newStarlineLeg) {
+        starline.getNetwork().add(newStarlineLeg);
+        return gameRepository.saveStarline(starline);
+    }
+
+    private Starline mergeStarline(Starline fromStarline, Starline toStarline, StarlineLeg newStarlineLeg) {
+        gameRepository.deleteStarline(fromStarline);
+        gameRepository.deleteStarline(toStarline);
+        var newStarline = new Starline(UUID.randomUUID(), Stream.concat(Stream.of(fromStarline, toStarline).map(Starline::getNetwork).flatMap(Set::stream), Stream.of(newStarlineLeg)).collect(Collectors.toSet()));
+
+        return gameRepository.saveStarline(newStarline);
+    }
+
+    public Optional<Starline> inStarline(Star star) {
+        return getAllStarlines()
+                .stream()
+                .filter(starline -> starline.getNetwork().stream().flatMap(StarlineLeg::getBothStars).anyMatch(star::equals))
+                .findFirst();
+    }
+
     public Order giveOpenStarlineOrder(Probe assignee, Star target) {
         var givenOrder = GivenOrder
                 .builder()
@@ -95,7 +161,7 @@ public class StarlinesGame {
     }
 
     private Star bestStar(Collection<Star> stars) {
-        return Collections.max(stars, Comparator.comparingInt(Star::getNaturalMassCapacity));
+        return Collections.max(stars, Comparator.comparingLong(Star::getNaturalMassCapacity));
     }
 
     public Map<HexPoint, StarControl> getClusterByID(ClusterID clusterID) {

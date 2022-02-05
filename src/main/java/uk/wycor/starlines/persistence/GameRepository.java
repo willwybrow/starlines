@@ -1,7 +1,11 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.persistence;
 
+import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.StarProbeOrbit;
+import uk.wycor.starlines.domain.Starline;
 import uk.wycor.starlines.domain.geometry.HexPoint;
-import uk.wycor.starlines.persistence.NewPlayerWork;
 
 import java.util.Collection;
 import java.util.Map;
@@ -22,4 +26,8 @@ public interface GameRepository {
     Collection<Star> getStarsInCluster(ClusterID clusterID);
 
     Collection<Starline> getStarlinesInUniverse();
+
+    void deleteStarline(Starline starline);
+
+    Starline saveStarline(Starline newStarline);
 }

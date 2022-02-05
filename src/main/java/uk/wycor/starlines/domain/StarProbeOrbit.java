@@ -10,6 +10,6 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 public class StarProbeOrbit {
-    Star star;
-    Set<Probe> orbitingProbes;
+    private Star star;
+    private Set<Probe> orbitingProbes;
 }

@@ -1,6 +1,5 @@
 package uk.wycor.starlines.domain;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import uk.wycor.starlines.domain.geometry.HexPoint;
@@ -15,16 +14,14 @@ public class Star extends GameObject {
     private final HexPoint coordinate;
 
     private final String name;
+    private final long naturalMassCapacity;
 
-    private final int currentMass;
+    private long currentMass;
+    private long stabilisation;
 
-    private final int naturalMassCapacity;
+    private long accumulatedInstability;
 
-    private final int stabilisation;
-
-    private final int accumulatedInstability;
-
-    public Star(UUID id, ClusterID location, HexPoint coordinate, String name, int currentMass, int naturalMassCapacity, int stabilisation, int accumulatedInstability) {
+    public Star(UUID id, ClusterID location, HexPoint coordinate, String name, long currentMass, long naturalMassCapacity, long stabilisation, long accumulatedInstability) {
         super(id);
         this.location = location;
         this.coordinate = coordinate;
@@ -35,7 +32,11 @@ public class Star extends GameObject {
         this.accumulatedInstability = accumulatedInstability;
     }
 
-    public int getMaximumMass() {
+    public long getMaximumMass() {
         return this.getNaturalMassCapacity() + this.getStabilisation();
+    }
+
+    public void loseMass(long mass) {
+        this.currentMass = Math.max(0, this.currentMass - mass);
     }
 }

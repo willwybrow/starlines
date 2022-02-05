@@ -33,13 +33,13 @@ public class StarEntity extends Entity {
     Long clusterID;
     CartesianPoint3d coordinate;
     String name;
-    Integer currentMass;
-    Integer naturalMassCapacity;
-    Integer stabilisation;
-    Integer accumulatedInstability;
+    Long currentMass;
+    Long naturalMassCapacity;
+    Long stabilisation;
+    Long accumulatedInstability;
 
     @Relationship(type = "LINKED_TO", direction = UNDIRECTED)
-    Set<StarEntity> linkedTo;
+    Set<StarlineLink> linkedTo;
 
     @Relationship(type = "ORBITING", direction = INCOMING)
     Set<ProbeEntity> probesInOrbit;
