@@ -19,10 +19,14 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class StarlinesGame {
+    private final static Logger logger = Logger.getLogger(StarlinesGame.class.getName());
+
     private final static ConfigurationSource CONFIGURATION_SOURCE = new ClasspathConfigurationSource("game.properties");
     private final GameRepository gameRepository;
 
@@ -46,6 +50,11 @@ public class StarlinesGame {
                 .toInstant(ZoneOffset.UTC);
     }
 
+    private Probe buildInitialProbe(Player owner) {
+        logger.info("Generating new Probe for player " + owner.getName());
+        return new Probe(UUID.randomUUID(), owner);
+    }
+
     public Player setUpNewPlayer(String playerName) {
         /*
         1. create a player object for this player
@@ -56,7 +65,7 @@ public class StarlinesGame {
         Player newPlayer = new Player(UUID.randomUUID(), playerName);
         return gameRepository.setUpNewPlayer(new NewPlayerWork(
                 () -> newPlayer,
-                () -> IntStream.range(0, 5).mapToObj(i -> new Probe(UUID.randomUUID(), newPlayer)).collect(Collectors.toSet()),
+                () -> Stream.generate(() -> buildInitialProbe(newPlayer)).limit(5).collect(Collectors.toSet()),
                 gameRepository::pickUnoccupiedCluster,
                 gameRepository::getStarsInCluster,
                 this::bestStar

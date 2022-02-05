@@ -2,6 +2,7 @@ package uk.wycor.starlines.persistence.neo4j;
 
 import org.neo4j.ogm.cypher.ComparisonOperator;
 import org.neo4j.ogm.cypher.Filter;
+import org.neo4j.ogm.cypher.function.FilterFunction;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.transaction.Transaction;
 import uk.wycor.starlines.domain.ClusterID;
@@ -27,7 +28,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class Neo4jGameRepository implements GameRepository {
     protected Session ogmSession = Neo4jSessionFactory.getInstance().getNeo4jSession();
@@ -40,7 +40,9 @@ public class Neo4jGameRepository implements GameRepository {
             var startingStar = newPlayerWork.starPicker().apply(newPlayerWork.getStarsInCluster().apply(clusterId));
             StarEntity starEntity = getStarEntity(startingStar);
             var newPlayer = newPlayerWork.newPlayerSupplier().get();
+            logger.info(String.format("Picked cluster ID %d to save new player %s to", clusterId.getNumeric(), newPlayer.getName()));
             var newPlayerEntity = PlayerEntity.fromPlayer(newPlayer, starEntity);
+            logger.info(String.format("Saving new player ID: %s name: %s", newPlayerEntity.getId(), newPlayerEntity.getName()));
             ogmSession.save(newPlayerEntity);
             ogmSession.save(newPlayerWork.startingProbeSupplier()
                     .get()
@@ -51,7 +53,9 @@ public class Neo4jGameRepository implements GameRepository {
                             .ownedBy(newPlayerEntity)
                             .orbiting(starEntity)
                             .build()
-                    ).collect(Collectors.toSet()), 2);
+                    )
+                    .peek(probeEntity -> logger.info(String.format("Created new probe %s belonging to player %s due to orbit star %s in cluster %d", probeEntity.getId(), probeEntity.getOwnedBy().getName(), probeEntity.getOrbiting().getName(), probeEntity.getOrbiting().getClusterID())))
+                    .collect(Collectors.toSet()), 2);
             ogmTransaction.commit();
             return newPlayer;
         }
@@ -87,14 +91,16 @@ public class Neo4jGameRepository implements GameRepository {
 
     @Override
     public ClusterID pickUnoccupiedCluster() {
+        logger.info("Trying to find an unoccupied cluster to start a new player in...");
         try {
-            return new ClusterID(
-                    ogmSession.query(Integer.class,
-                            """ 
-                                    MATCH (star:Star) OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe) WITH star.clusterID as clusterID, count(star) AS starsInCluster, count(ship) AS shipsInCluster WHERE starsInCluster > 0 AND shipsInCluster = 0 RETURN clusterID;
-                                    """,
-                            Collections.emptyMap()
-                    ).iterator().next());
+            Integer pickedClusterID = ogmSession.queryForObject(Integer.class,
+                    """ 
+                            MATCH (star:Star) OPTIONAL MATCH (star:Star)<-[o:ORBITING]-(ship:Probe) WITH star.clusterID as clusterID, count(star) AS starsInCluster, count(ship) AS shipsInCluster WHERE starsInCluster > 0 AND shipsInCluster = 0 RETURN clusterID LIMIT 1;
+                            """,
+                    Collections.emptyMap()
+            );
+            logger.info(String.format("We think that cluster %d is empty.", pickedClusterID));
+            return new ClusterID(pickedClusterID);
         } catch (NullPointerException | NoSuchElementException e) {
             return nextClusterID(); // beginning of game
         }
@@ -102,12 +108,7 @@ public class Neo4jGameRepository implements GameRepository {
 
     @Override
     public Collection<Star> getStarsInCluster(ClusterID clusterID) {
-        return StreamSupport
-                .stream(ogmSession.query(StarEntity.class, "MATCH (star:Star) " +
-                        "WHERE star.clusterID = $clusterID " +
-                        "RETURN star", Map.of("clusterID", clusterID.getNumeric())).spliterator(), false)
-                .map(StarEntity::toStar)
-                .collect(Collectors.toSet());
+        return ogmSession.loadAll(StarEntity.class, new Filter("clusterID", ComparisonOperator.EQUALS, clusterID.getNumeric()), 0).stream().map(StarEntity::toStar).collect(Collectors.toSet());
     }
 
     @Override
@@ -149,6 +150,7 @@ public class Neo4jGameRepository implements GameRepository {
     }
 
     private ClusterID nextClusterID() {
+        logger.info("Getting the next cluster ID to be generated");
         return latestGeneratedCluster().map(ClusterID::getNumeric).map(i -> i + 1).map(ClusterID::new).orElse(new ClusterID(0));
     }
 }
