@@ -1,5 +1,9 @@
 package uk.wycor.starlines.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.domain.geometry.Pair;
@@ -8,12 +12,15 @@ import uk.wycor.starlines.domain.geometry.Szudzik;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Getter
+@JsonSerialize
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id", scope = ClusterID.class)
 public class ClusterID {
-    private final long numeric;
-    private final HexPoint coordinates;
+    @JsonProperty("id")
+    protected final long numeric;
+    @JsonProperty("coordinates")
+    protected final HexPoint coordinates;
 
     public ClusterID(long numeric) {
         this.numeric = numeric;
@@ -23,6 +30,10 @@ public class ClusterID {
     public ClusterID(HexPoint coordinates) {
         this.coordinates = coordinates;
         this.numeric = ClusterID.clusterID(coordinates);
+    }
+
+    public ClusterIDCluster withNeighbours() {
+        return (ClusterIDCluster) this;
     }
 
     public Long distanceTo(ClusterID otherCluster) {
@@ -59,15 +70,6 @@ public class ClusterID {
     static HexPoint coordinate(long clusterID) {
         var pair = Szudzik.unpair(clusterID);
         return new HexPoint(integerToNatural(pair.a()), integerToNatural(pair.b()));
-    }
-
-    public List<ClusterID> neighbours() {
-        return AXIAL_DIRECTION_VECTORS
-                .stream()
-                .map(directionPair -> this.coordinates.translate(directionPair.a(), directionPair.b()))
-                .map(ClusterID::new)
-                .collect(Collectors.toList());
-
     }
 
     @Override

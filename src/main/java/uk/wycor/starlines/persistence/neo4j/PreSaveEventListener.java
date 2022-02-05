@@ -1,17 +1,14 @@
 package uk.wycor.starlines.persistence.neo4j;
 
-import org.neo4j.ogm.session.event.Event;
-import org.neo4j.ogm.session.event.EventListenerAdapter;
-import uk.wycor.starlines.persistence.neo4j.entity.Entity;
-import uk.wycor.starlines.persistence.neo4j.entity.Relationship;
+import org.springframework.stereotype.Component;
 
-import java.util.UUID;
 import java.util.logging.Logger;
 
-class PreSaveEventListener extends EventListenerAdapter {
+@Component
+class PreSaveEventListener {
     private static final Logger logger = Logger.getLogger(PreSaveEventListener.class.getName());
+/*
 
-    @Override
     public void onPreSave(Event event) {
         try {
             Entity entity = (Entity) event.getObject();
@@ -30,5 +27,5 @@ class PreSaveEventListener extends EventListenerAdapter {
         } catch (ClassCastException exception) {
             logger.warning("Failed to cast saved object to Relationship class");
         }
-    }
+    }*/
 }

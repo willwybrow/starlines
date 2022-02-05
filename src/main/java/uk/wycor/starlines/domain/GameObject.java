@@ -3,6 +3,9 @@ package uk.wycor.starlines.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -10,8 +13,11 @@ import java.util.UUID;
 @Getter
 @Setter
 @AllArgsConstructor
+@SuperBuilder
 public class GameObject {
-    private final UUID id;
+    @Id
+    @GeneratedValue(generatorClass = GeneratedValue.UUIDGenerator.class)
+    UUID id;
 
     @Override
     public boolean equals(Object o) {

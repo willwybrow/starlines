@@ -1,8 +1,13 @@
 package uk.wycor.starlines.domain;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import uk.wycor.starlines.RandomSample;
 import uk.wycor.starlines.persistence.GameRepository;
-import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
+import uk.wycor.starlines.persistence.neo4j.PlayerRepository;
+import uk.wycor.starlines.persistence.neo4j.StarRepository;
+import uk.wycor.starlines.persistence.neo4j.StarlineRepository;
+import uk.wycor.starlines.web.Application;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,10 +18,10 @@ public class UniverseManager {
 
     private final static Logger logger = Logger.getLogger(UniverseManager.class.getName());
 
-    private final GameRepository gameRepository;
+    private final GameRepository gameRepository = null;
 
     public UniverseManager(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
+
     }
 
     public void expandUniverse() {
@@ -24,8 +29,13 @@ public class UniverseManager {
     }
 
     public static void main(String[] args) {
-        UniverseManager universeManager = new UniverseManager(new Neo4jGameRepository());
-        StarlinesGame starlinesGame = new StarlinesGame();
+        ConfigurableApplicationContext appContext = SpringApplication.run(Application.class, args);
+        StarRepository starRepository = appContext.getBean(StarRepository.class);
+        PlayerRepository playerRepository = appContext.getBean(PlayerRepository.class);
+        StarlineRepository starlineRepository = appContext.getBean(StarlineRepository.class);
+
+        UniverseManager universeManager = new UniverseManager(null);
+        StarlinesGame starlinesGame = new StarlinesGame(starRepository, playerRepository, starlineRepository);
         /*
         PlayerNameGenerator.names().forEach(name -> {
             universeManager.expandUniverse();
@@ -40,7 +50,7 @@ public class UniverseManager {
         var anotherStar = RandomSample.pick(universeManager.gameRepository.getStarsAndOrbitingProbesInCluster(new ClusterID(14)));
 
         var starline = starlinesGame.openStarline(oneStar.getStar(), anotherStar.getStar(), true);
-        logger.info(String.format("Opened starline ID %s between star %d:%s and %d:%s", starline.getId(), oneStar.getStar().getLocation().getNumeric(), oneStar.getStar().getName(), anotherStar.getStar().getLocation().getNumeric(), anotherStar.getStar().getName()));
+        logger.info(String.format("Opened starline ID %s between star %d:%s and %d:%s", starline.getId(), oneStar.getStar().getClusterID().getNumeric(), oneStar.getStar().getName(), anotherStar.getStar().getClusterID().getNumeric(), anotherStar.getStar().getName()));
     }
 
     static class PlayerNameGenerator {

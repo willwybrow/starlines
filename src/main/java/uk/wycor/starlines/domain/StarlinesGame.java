@@ -1,14 +1,16 @@
 package uk.wycor.starlines.domain;
 
-import org.neo4j.ogm.config.ClasspathConfigurationSource;
-import org.neo4j.ogm.config.ConfigurationSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.domain.order.GivenOrder;
 import uk.wycor.starlines.domain.order.OpenStarline;
 import uk.wycor.starlines.domain.order.Order;
 import uk.wycor.starlines.persistence.GameRepository;
-import uk.wycor.starlines.persistence.NewPlayerWork;
-import uk.wycor.starlines.persistence.neo4j.Neo4jGameRepository;
+import uk.wycor.starlines.persistence.neo4j.PlayerRepository;
+import uk.wycor.starlines.persistence.neo4j.StarRepository;
+import uk.wycor.starlines.persistence.neo4j.StarlineRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,18 +28,26 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@Service
 public class StarlinesGame {
     private final static Logger logger = Logger.getLogger(StarlinesGame.class.getName());
 
-    private final static ConfigurationSource CONFIGURATION_SOURCE = new ClasspathConfigurationSource("game.properties");
-    private final GameRepository gameRepository;
+    private final GameRepository gameRepository = null;
+    private final StarRepository starRepository;
+    private final PlayerRepository playerRepository;
+    private final StarlineRepository starlineRepository;
 
-    public StarlinesGame() {
-        if (CONFIGURATION_SOURCE.properties().getProperty("repository-class").equals(Neo4jGameRepository.class.getName())) {
-            this.gameRepository = new Neo4jGameRepository();
-        } else {
-            throw new RuntimeException("Unconfigured repository");
-        }
+    @Autowired
+    public StarlinesGame(StarRepository starRepository, PlayerRepository playerRepository, StarlineRepository starlineRepository) {
+        this.starRepository = starRepository;
+        this.playerRepository = playerRepository;
+        this.starlineRepository = starlineRepository;
+    }
+
+    public Mono<Cluster> getCluster(ClusterID clusterID) {
+        return starRepository.getInCluster(clusterID.getNumeric())
+                .collect(Collectors.toList())
+                .map(stars -> new Cluster(clusterID, stars));
     }
 
     public Instant nextTick() {
@@ -65,6 +75,8 @@ public class StarlinesGame {
         4. save the player's starting ships to the above star
         */
         Player newPlayer = new Player(UUID.randomUUID(), playerName);
+        return playerRepository.save(newPlayer).block();
+        /*
         return gameRepository.setUpNewPlayer(new NewPlayerWork(
                 () -> newPlayer,
                 () -> Stream.generate(() -> buildInitialProbe(newPlayer)).limit(5).collect(Collectors.toSet()),
@@ -72,10 +84,13 @@ public class StarlinesGame {
                 gameRepository::getStarsInCluster,
                 this::bestStar
         ));
+
+         */
     }
 
     public Collection<Starline> getAllStarlines() {
-        return this.gameRepository.getStarlinesInUniverse();
+        return this.starlineRepository.findAll().collect(Collectors.toList()).block();
+        // return this.gameRepository.getStarlinesInUniverse();
     }
 
     public Starline openStarline(Star fromStar, Star toStar, boolean mutual) {
@@ -84,7 +99,7 @@ public class StarlinesGame {
         2. are either of the two stars in starlines already? if they are both in different starlines the starlines will need to be merged
         3. save all changes
          */
-        long distance = fromStar.getLocation().distanceTo(toStar.getLocation());
+        long distance = fromStar.getClusterID().distanceTo(toStar.getClusterID());
         long starlineMassCost = distance * 2;
         // each star must have the cost of a starline + 2 in mass before a starline can be opened
         // even if it's opened mutually
