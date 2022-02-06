@@ -2,9 +2,10 @@ package uk.wycor.starlines.domain;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import uk.wycor.starlines.persistence.neo4j.PlayerRepository;
+import uk.wycor.starlines.persistence.neo4j.StarRepository;
 import uk.wycor.starlines.web.Application;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,9 +15,11 @@ public class UniverseManager {
 
     private final static Logger logger = Logger.getLogger(UniverseManager.class.getName());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ConfigurableApplicationContext appContext = SpringApplication.run(Application.class, args);
         UniverseService universeService = appContext.getBean(UniverseService.class);
+        PlayerRepository playerRepository = appContext.getBean(PlayerRepository.class);
+        StarRepository starRepository = appContext.getBean(StarRepository.class);
 
         /*
         PlayerNameGenerator.names().forEach(name -> {
@@ -36,15 +39,26 @@ public class UniverseManager {
 
         logger.info("Started this whole mess...");
 
-        var cluster = universeService.expandUniverse().block(Duration.ofSeconds(2));
+        playerRepository.save(Player.builder().name("Brian").build()).subscribe(
+                data -> logger.info(String.format("found post: %s", data)),
+                err -> logger.warning(String.format("error: %s", err)),
+                () -> logger.info("done"));
+
+
+
+        var cluster = universeService.expandUniverse()
+                .subscribe(
+                        data -> logger.info(String.format("found post: %s", data)),
+                        err -> logger.warning(String.format("error: %s", err)),
+                        () -> logger.info("done")
+                );
 //                .subscribe(newCluster ->
 //                {
 //                    logger.info(String.format("Created new cluster %d", newCluster.getClusterID().getNumeric()));
-//                    SpringApplication.exit(appContext);
+//                    appContext.stop();
+//                    System.exit(SpringApplication.exit(appContext));
 //                }
-//        ).dispose();
-
-        // appContext.stop();
+//        );
     }
 
     static class PlayerNameGenerator {

@@ -23,8 +23,8 @@ public class ClusterID {
     protected final HexPoint coordinates;
 
     public ClusterID(long numeric) {
-        this.numeric = numeric;
-        this.coordinates = ClusterID.coordinate(numeric);
+        this.numeric = Math.max(0L, numeric);
+        this.coordinates = ClusterID.coordinate(this.numeric);
     }
 
     public ClusterID(HexPoint coordinates) {

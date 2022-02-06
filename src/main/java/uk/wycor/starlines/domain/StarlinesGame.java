@@ -23,13 +23,15 @@ public class StarlinesGame {
     private final static Logger logger = Logger.getLogger(StarlinesGame.class.getName());
 
     private final Clock clock;
+    private final UniverseService universeService;
     private final StarRepository starRepository;
     private final PlayerRepository playerRepository;
     private final StarlineRepository starlineRepository;
 
     @Autowired
-    public StarlinesGame(Clock clock, StarRepository starRepository, PlayerRepository playerRepository, StarlineRepository starlineRepository) {
+    public StarlinesGame(Clock clock, UniverseService universeService, StarRepository starRepository, PlayerRepository playerRepository, StarlineRepository starlineRepository) {
         this.clock = clock;
+        this.universeService = universeService;
         this.starRepository = starRepository;
         this.playerRepository = playerRepository;
         this.starlineRepository = starlineRepository;
@@ -37,6 +39,7 @@ public class StarlinesGame {
 
     public Mono<Cluster> getCluster(ClusterID clusterID) {
         return starRepository.findByClusterIDEquals(clusterID)
+                .switchIfEmpty(Mono.defer(() -> universeService.generateClusterAt(clusterID)).flatMapMany(cluster -> Flux.fromIterable(cluster.getStars())))
                 .collect(Collectors.toSet())
                 .map(stars -> new Cluster(clusterID.withNeighbours(), stars));
     }

@@ -1,8 +1,6 @@
 package uk.wycor.starlines.persistence.neo4j;
 
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
-import org.springframework.data.neo4j.repository.query.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,15 +12,6 @@ import java.util.UUID;
 
 @Repository
 public interface StarRepository extends ReactiveNeo4jRepository<Star, UUID> {
-    @Query("""
-            MATCH (star:`Star`) \s
-            WHERE star.clusterID = $clusterNumber \s
-            OPTIONAL MATCH (star)<-[orbiting:`ORBITING`]-(probe:`Probe`)-[ownedBy:OWNED_BY]->(player:Player) \s
-            WITH collect(id(star)) AS star, collect(id(orbiting)) AS orbiting, collect(id(probe)) AS probe, collect(id(ownedBy)) AS ownedBy, collect(id(player)) AS player \s
-            RETURN star, orbiting, probe, ownedBy, player
-            """)
-    Flux<Star> getInCluster(@Param("clusterNumber") Long clusterNumber);
-
     Flux<Star> findByClusterIDEquals(ClusterID clusterID);
 
     Flux<Star> findByClusterIDIn(Set<ClusterID> clusterIDs);

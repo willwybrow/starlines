@@ -26,10 +26,11 @@ public class UniverseService {
                 .findFirstByOrderByClusterIDDesc()
                 .doOnNext(latestStar -> logger.info(latestStar.toString()))
                 .map(Star::getClusterID)
+                .switchIfEmpty(Mono.defer(() -> Mono.fromSupplier(() -> new ClusterID(0))))
                 .flatMap(this::generateClusterAt);
     }
 
-    private Mono<Cluster> generateClusterAt(ClusterID clusterID) {
+    public Mono<Cluster> generateClusterAt(ClusterID clusterID) {
         return Mono.fromSupplier(() -> clusterID)
                 .map(ClusterID::getNumeric)
                 .map(clusterNumber -> clusterNumber + 1)
