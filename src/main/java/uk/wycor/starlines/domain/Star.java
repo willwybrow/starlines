@@ -11,11 +11,13 @@ import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.persistence.neo4j.ClusterIDConverter;
 import uk.wycor.starlines.persistence.neo4j.HexPointConverter;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
-import static org.springframework.data.neo4j.core.schema.Relationship.Direction.OUTGOING;
 
 @Getter
 @Setter
@@ -24,7 +26,7 @@ public class Star extends GameObject {
     @ConvertWith(converter = ClusterIDConverter.class)
     private final ClusterID clusterID;
     @ConvertWith(converter = HexPointConverter.class)
-    @JsonProperty("coordinate")
+    @JsonProperty("coordinates")
     private final HexPoint coordinate;
 
     @JsonProperty
@@ -40,11 +42,12 @@ public class Star extends GameObject {
     @JsonProperty
     private long accumulatedInstability;
 
+    /*
     @Relationship(type = "LINKED_TO", direction = INCOMING)
-    Set<Starline> linkedFrom;
+    Set<Star> linkedFrom;
 
     @Relationship(type = "LINKED_TO", direction = OUTGOING)
-    Set<Starline> linkedTo;
+    Set<Star> linkedTo;*/
 
     @Relationship(type = "ORBITING", direction = INCOMING)
     @JsonProperty
@@ -70,5 +73,29 @@ public class Star extends GameObject {
 
     public void loseMass(long mass) {
         this.currentMass = Math.max(0, this.currentMass - mass);
+    }
+
+    @JsonProperty("control")
+    public StarControl getStarControl() {
+        return this.getProbesInOrbit()
+                .stream()
+                .collect(Collectors.groupingBy(Ship::getOwner))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().size()))
+                .values()
+                .stream()
+                .max(Integer::compare)
+                .map(maxNumberOfShips -> new StarControl(
+                        this.getProbesInOrbit()
+                                .stream()
+                                .collect(Collectors.groupingBy(Ship::getOwner))
+                                .entrySet()
+                                .stream()
+                                .filter(entry -> entry.getValue().size() == maxNumberOfShips)
+                                .map(Map.Entry::getKey)
+                                .collect(Collectors.toSet()),
+                        maxNumberOfShips
+                )).orElse(new StarControl(Collections.emptyList(), 0));
     }
 }

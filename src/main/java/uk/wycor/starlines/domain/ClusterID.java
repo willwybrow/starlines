@@ -33,7 +33,7 @@ public class ClusterID {
     }
 
     public ClusterIDCluster withNeighbours() {
-        return (ClusterIDCluster) this;
+        return new ClusterIDCluster(this.coordinates);
     }
 
     public Long distanceTo(ClusterID otherCluster) {

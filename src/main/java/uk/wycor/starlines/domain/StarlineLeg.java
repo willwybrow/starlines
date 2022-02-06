@@ -8,7 +8,7 @@ import org.springframework.data.neo4j.core.schema.TargetNode;
 import java.util.stream.Stream;
 
 @Getter
-@RelationshipProperties
+@RelationshipProperties()
 public class StarlineLeg extends GameObjectRelationship {
 
     private final Star fromStar;

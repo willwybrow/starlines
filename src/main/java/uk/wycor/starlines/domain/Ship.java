@@ -1,14 +1,26 @@
 package uk.wycor.starlines.domain;
 
-import org.springframework.data.neo4j.core.schema.Node;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.UUID;
 
-@Node("Ship")
+@Getter
+@Setter
+//@Node("Ship")
 public abstract class Ship extends GameObject {
-    public final Player ownedBy;
-    public Ship(UUID id, Player ownedBy) {
+    @Relationship(type = "OWNED_BY", direction = Relationship.Direction.OUTGOING)
+    @JsonProperty("owner")
+    private Player owner;
+
+    @Relationship(type = "ORBITING", direction = Relationship.Direction.OUTGOING)
+    private Star orbiting;
+
+    public Ship(UUID id, Player owner, Star orbiting) {
         super(id);
-        this.ownedBy = ownedBy;
+        this.owner = owner;
+        this.orbiting = orbiting;
     }
 }

@@ -3,7 +3,7 @@ package uk.wycor.starlines.domain;
 import java.util.UUID;
 
 public class Stabiliser extends Ship {
-    public Stabiliser(UUID id, Player ownedBy) {
-        super(id, ownedBy);
+    public Stabiliser(UUID id, Player owner, Star orbiting) {
+        super(id, owner, orbiting);
     }
 }

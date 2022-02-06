@@ -1,5 +1,10 @@
 package uk.wycor.starlines.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
+import com.fasterxml.jackson.databind.ser.std.UUIDSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +22,9 @@ import java.util.UUID;
 public class GameObject {
     @Id
     @GeneratedValue(generatorClass = GeneratedValue.UUIDGenerator.class)
+    @JsonSerialize(using = UUIDSerializer.class)
+    @JsonDeserialize(using = UUIDDeserializer.class)
+    @JsonProperty
     UUID id;
 
     @Override

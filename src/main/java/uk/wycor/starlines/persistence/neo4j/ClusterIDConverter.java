@@ -12,7 +12,7 @@ public class ClusterIDConverter implements Neo4jPersistentPropertyConverter<Clus
 
     @Override
     public Value write(ClusterID source) {
-        return Optional.ofNullable(source).map(ClusterID::getNumeric).map(IntegerValue::new).orElse((IntegerValue) Values.NULL);
+        return Optional.ofNullable(source).map(ClusterID::getNumeric).map(IntegerValue::new).map(integerValue -> (Value)integerValue).orElse(Values.NULL);
     }
 
     @Override

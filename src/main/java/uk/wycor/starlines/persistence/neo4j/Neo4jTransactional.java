@@ -10,6 +10,6 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-@Transactional(transactionManager="neo4jTransactionManager")
+@Transactional(transactionManager="reactiveTransactionManager")
 public @interface Neo4jTransactional {
 }

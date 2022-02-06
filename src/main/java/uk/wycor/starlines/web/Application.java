@@ -1,8 +1,6 @@
 package uk.wycor.starlines.web;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -19,10 +17,5 @@ public class Application {
     @Bean
     Clock clock() {
         return Clock.systemUTC();
-    }
-
-    public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(Application.class);
-        ConfigurableApplicationContext configurableApplicationContext = app.run(args);
     }
 }
