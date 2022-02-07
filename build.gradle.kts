@@ -58,3 +58,7 @@ tasks.withType<Test> {
         events = setOf(PASSED, SKIPPED, FAILED)
     }
 }
+
+application {
+    mainClass.set("uk.wycor.starlines.web.WebServer")
+}
