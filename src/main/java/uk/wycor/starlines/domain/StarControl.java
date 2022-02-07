@@ -1,20 +1,20 @@
 package uk.wycor.starlines.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 import java.util.Collection;
 
 public class StarControl {
     @Getter
-    private final Star star;
+    @JsonProperty
+    private final Collection<Player> players;
     @Getter
-    private final Collection<Player> controllingPlayers;
-    @Getter
-    private final long controllingProbeCount;
+    @JsonProperty
+    private final long probeCount;
 
-    public StarControl(Star star, Collection<Player> controllingPlayers, long controllingProbeCount) {
-        this.star = star;
-        this.controllingPlayers = controllingPlayers;
-        this.controllingProbeCount = controllingProbeCount;
+    public StarControl(Collection<Player> players, long probeCount) {
+        this.players = players;
+        this.probeCount = probeCount;
     }
 }

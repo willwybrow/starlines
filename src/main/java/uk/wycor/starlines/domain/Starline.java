@@ -1,14 +1,14 @@
 package uk.wycor.starlines.domain;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.springframework.data.neo4j.core.schema.Node;
 
 import java.util.Set;
 import java.util.UUID;
 
 
 @Getter
-
+@Node("Starline")
 public class Starline extends GameObject {
     private final Set<StarlineLeg> network;
 

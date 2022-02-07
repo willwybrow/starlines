@@ -1,9 +1,16 @@
 package uk.wycor.starlines.domain.geometry;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.Objects;
 import java.util.stream.Stream;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonSerialize
 public record HexPoint(long q, long r) {
+    @JsonProperty("s")
     public long s() {
         return (-this.q) - this.r;
     }

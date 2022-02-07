@@ -5,7 +5,6 @@ import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public class StarfieldGenerator {
             .filter(hexPoint -> -(CLUSTER_SUBDIVISIONS / 2) <= hexPoint.s() && hexPoint.s() <= (CLUSTER_SUBDIVISIONS / 2))
             .toList();
 
-    static Map<HexPoint, Star> generateRandomStarfield(ClusterID destinationCluster) {
+    static List<Star> generateRandomStarfield(ClusterID destinationCluster) {
         Random random = new Random();
         var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
@@ -41,16 +40,14 @@ public class StarfieldGenerator {
         List<HexPoint> randomPointsForNewStars = RandomSample.sample(ALL_POSSIBLE_CLUSTER_COORDINATES, newStarMasses.size());
         return IntStream.range(0, newStarMasses.size())
                 .boxed()
-                .collect(Collectors.toMap(
-                        randomPointsForNewStars::get,
+                .map(
                         i -> new Star(
                                 UUID.randomUUID(),
                                 destinationCluster,
                                 randomPointsForNewStars.get(i),
                                 StarNameGenerator.randomName(),
                                 newStarMasses.get(i),
-                                (int) Math.round((float)newStarMasses.get(i) * 1.75), 0, 0)
-                        )
-                );
+                                (int) Math.round((float) newStarMasses.get(i) * 1.75), 0, 0)
+                ).collect(Collectors.toList());
     }
 }
