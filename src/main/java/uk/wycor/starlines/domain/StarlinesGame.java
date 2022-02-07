@@ -51,7 +51,9 @@ public class StarlinesGame {
                 .map(entry -> new Cluster(entry.getKey().withNeighbours(), entry.getValue()));
     }
 
-    public Mono<ClusterID> getMostRecentlyGeneratedCluster() {
+    // public Mono<Star>
+
+    private Mono<ClusterID> getMostRecentlyGeneratedCluster() {
         return starRepository.findFirstByOrderByClusterIDDesc().map(Star::getClusterID);
     }
 
