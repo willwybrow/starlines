@@ -2,7 +2,6 @@ package uk.wycor.starlines.persistence.neo4j;
 
 import org.neo4j.driver.Value;
 import org.neo4j.driver.Values;
-import org.neo4j.driver.internal.value.IntegerValue;
 import org.springframework.data.neo4j.core.convert.Neo4jPersistentPropertyConverter;
 import uk.wycor.starlines.domain.ClusterID;
 
@@ -12,7 +11,7 @@ public class ClusterIDConverter implements Neo4jPersistentPropertyConverter<Clus
 
     @Override
     public Value write(ClusterID source) {
-        return Optional.ofNullable(source).map(ClusterID::getNumeric).map(IntegerValue::new).map(integerValue -> (Value)integerValue).orElse(Values.NULL);
+        return Optional.ofNullable(source).map(ClusterID::getNumeric).map(Values::value).orElseThrow();
     }
 
     @Override

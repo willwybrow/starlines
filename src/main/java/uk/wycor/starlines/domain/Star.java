@@ -1,5 +1,6 @@
 package uk.wycor.starlines.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.INCOMING;
 import static org.springframework.data.neo4j.core.schema.Relationship.Direction.OUTGOING;
 
@@ -29,6 +31,7 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
 @Setter
 @NoArgsConstructor
 @SuperBuilder
+@JsonInclude(value = NON_NULL)
 @Node("Star")
 public class Star extends GameObject {
     @ConvertWith(converter = ClusterIDConverter.class)
@@ -72,8 +75,14 @@ public class Star extends GameObject {
         this.naturalMassCapacity = naturalMassCapacity;
         this.stabilisation = stabilisation;
         this.accumulatedInstability = accumulatedInstability;
+        this.probesInOrbit = new HashSet<>();
     }
 
+    @JsonProperty("clusterNumber")
+    @Transient
+    public long getClusterNumber() {
+        return this.getClusterID().getNumeric();
+    }
 
     @JsonProperty("maximumMass")
     @Transient

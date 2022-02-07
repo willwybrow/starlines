@@ -24,17 +24,18 @@ public class UniverseService {
     public Mono<Cluster> expandUniverse() {
         return starRepository
                 .findFirstByOrderByClusterIDDesc()
-                .doOnNext(latestStar -> logger.info(latestStar.toString()))
+                .doOnNext(latestStar -> logger.info(String.format("Star with latest cluster ID is %s (%s) at %d", latestStar.getName(), latestStar.getId().toString(), latestStar.getClusterNumber())))
                 .map(Star::getClusterID)
+                .map(ClusterID::getNumeric)
+                .map(clusterNumber -> clusterNumber + 1)
+                .map(ClusterID::new)
                 .switchIfEmpty(Mono.defer(() -> Mono.fromSupplier(() -> new ClusterID(0))))
                 .flatMap(this::generateClusterAt);
     }
 
     public Mono<Cluster> generateClusterAt(ClusterID clusterID) {
+        logger.info(String.format("Called to generate cluster at %d", clusterID.getNumeric()));
         return Mono.fromSupplier(() -> clusterID)
-                .map(ClusterID::getNumeric)
-                .map(clusterNumber -> clusterNumber + 1)
-                .map(ClusterID::new)
                 .map(StarfieldGenerator::generateRandomStarfield)
                 .doOnNext(stars -> logger.info(String.format("Generated %d new stars", stars.size())))
                 .flatMapMany(starRepository::saveAll)
