@@ -1,7 +1,8 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import uk.wycor.starlines.domain.Player;
 
 import java.util.Collection;
 

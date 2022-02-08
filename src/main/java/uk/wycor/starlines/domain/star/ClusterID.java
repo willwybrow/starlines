@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;

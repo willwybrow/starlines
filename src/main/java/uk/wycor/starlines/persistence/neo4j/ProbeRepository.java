@@ -3,7 +3,7 @@ package uk.wycor.starlines.persistence.neo4j;
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import reactor.core.publisher.Flux;
-import uk.wycor.starlines.domain.Probe;
+import uk.wycor.starlines.domain.ship.Probe;
 
 import java.util.UUID;
 

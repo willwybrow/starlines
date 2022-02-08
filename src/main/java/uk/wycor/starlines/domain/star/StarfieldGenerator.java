@@ -1,6 +1,7 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import uk.wycor.starlines.RandomSample;
+import uk.wycor.starlines.domain.StarNameGenerator;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class StarfieldGenerator {
             .filter(hexPoint -> -(CLUSTER_SUBDIVISIONS / 2) <= hexPoint.s() && hexPoint.s() <= (CLUSTER_SUBDIVISIONS / 2))
             .toList();
 
-    static Set<Star> generateRandomStarfield(ClusterID destinationCluster) {
+    public static Set<Star> generateRandomStarfield(ClusterID destinationCluster) {
         Random random = new Random();
         var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();

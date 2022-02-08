@@ -1,4 +1,7 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.ship;
+
+import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.star.Star;
 
 import java.util.UUID;
 

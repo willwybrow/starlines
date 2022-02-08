@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,10 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.neo4j.core.convert.ConvertWith;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+import uk.wycor.starlines.domain.GameObject;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.domain.ship.Probe;
+import uk.wycor.starlines.domain.ship.Ship;
 import uk.wycor.starlines.persistence.neo4j.ClusterIDConverter;
 import uk.wycor.starlines.persistence.neo4j.HexPointConverter;
 

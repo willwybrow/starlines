@@ -1,7 +1,9 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
+import uk.wycor.starlines.domain.JsonTest;
+import uk.wycor.starlines.domain.star.ClusterIDCluster;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

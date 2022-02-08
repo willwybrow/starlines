@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.ship;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+import uk.wycor.starlines.domain.GameObject;
+import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.star.Star;
 
 import java.util.UUID;
 

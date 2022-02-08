@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 import org.springframework.data.neo4j.core.schema.TargetNode;
+import uk.wycor.starlines.domain.star.Star;
 
 import java.util.stream.Stream;
 

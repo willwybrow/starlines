@@ -1,9 +1,9 @@
 package uk.wycor.starlines.persistence;
 
-import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.star.ClusterID;
 import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.Probe;
-import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.ship.Probe;
+import uk.wycor.starlines.domain.star.Star;
 
 import java.util.Collection;
 import java.util.function.Function;

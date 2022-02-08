@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.Cluster;
-import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.star.Cluster;
+import uk.wycor.starlines.domain.star.ClusterID;
 import uk.wycor.starlines.domain.StarlinesGame;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
@@ -43,8 +43,7 @@ public class ClustersController {
                         .mapToObj(r -> new HexPoint(q, r))
                 ).map(ClusterID::new)
                 .collect(Collectors.toSet());
-        return starlinesGame
-                .getClusters(clusterIDs)
+        return starlinesGame.universeService.getClusters(clusterIDs, starlinesGame)
                 .collectMap(cluster -> cluster.getClusterID().getNumeric(), cluster -> cluster)
                 .map(cluster -> new ResponseEntity<>(cluster, new HttpHeaders(), HttpStatus.OK));
     }

@@ -2,7 +2,7 @@ package uk.wycor.starlines.domain.order;
 
 import lombok.Builder;
 import lombok.Getter;
-import uk.wycor.starlines.domain.Ship;
+import uk.wycor.starlines.domain.ship.Ship;
 
 import java.time.Instant;
 

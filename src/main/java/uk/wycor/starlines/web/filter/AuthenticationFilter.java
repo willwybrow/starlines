@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 import reactor.util.context.ContextView;
 import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.StarlinesGame;
+import uk.wycor.starlines.domain.PlayerService;
 
 import java.util.Base64;
 import java.util.Optional;
@@ -26,11 +26,11 @@ import static uk.wycor.starlines.domain.UniverseManager.PlayerNameGenerator.rand
 public class AuthenticationFilter implements WebFilter {
     public static final String AUTHENTICATED_USER_CONTEXT_KEY = "AUTHENTICATED_USER";
 
-    private final StarlinesGame starlinesGame;
+    private final PlayerService playerService;
 
     @Autowired
-    public AuthenticationFilter(StarlinesGame starlinesGame) {
-        this.starlinesGame = starlinesGame;
+    public AuthenticationFilter(PlayerService playerService) {
+        this.playerService = playerService;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class AuthenticationFilter implements WebFilter {
                 .getResponse()
                 .addCookie(ResponseCookie.from("player_name", player.getName()).path("/").build());
 
-        return starlinesGame.loadOrCreatePlayer(player)
+        return playerService.loadOrCreatePlayer(player)
                 .flatMap(p -> chain
                         .filter(exchange)
                         .contextWrite(Context.of(AUTHENTICATED_USER_CONTEXT_KEY, p))

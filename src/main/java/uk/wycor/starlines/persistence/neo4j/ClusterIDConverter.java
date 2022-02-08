@@ -3,7 +3,7 @@ package uk.wycor.starlines.persistence.neo4j;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.Values;
 import org.springframework.data.neo4j.core.convert.Neo4jPersistentPropertyConverter;
-import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.star.ClusterID;
 
 import java.util.Optional;
 

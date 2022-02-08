@@ -1,8 +1,8 @@
 package uk.wycor.starlines.persistence;
 
-import uk.wycor.starlines.domain.ClusterID;
+import uk.wycor.starlines.domain.star.ClusterID;
 import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.Star;
+import uk.wycor.starlines.domain.star.Star;
 import uk.wycor.starlines.domain.StarProbeOrbit;
 import uk.wycor.starlines.domain.Starline;
 import uk.wycor.starlines.domain.geometry.HexPoint;

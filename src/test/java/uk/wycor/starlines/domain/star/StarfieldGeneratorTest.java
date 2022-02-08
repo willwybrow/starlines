@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.star;
 
 import org.junit.jupiter.api.Test;
 import uk.wycor.starlines.domain.geometry.HexPoint;
@@ -8,7 +8,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.wycor.starlines.domain.StarfieldGenerator.CLUSTER_SUBDIVISIONS;
+import static uk.wycor.starlines.domain.star.StarfieldGenerator.CLUSTER_SUBDIVISIONS;
 
 class StarfieldGeneratorTest {
     @Test
