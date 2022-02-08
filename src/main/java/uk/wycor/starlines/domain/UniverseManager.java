@@ -2,6 +2,7 @@ package uk.wycor.starlines.domain;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import uk.wycor.starlines.RandomSample;
 import uk.wycor.starlines.persistence.neo4j.PlayerRepository;
 import uk.wycor.starlines.persistence.neo4j.StarRepository;
 import uk.wycor.starlines.web.Application;
@@ -71,6 +72,10 @@ public class UniverseManager {
 
         public static List<String> names() {
             return Arrays.stream(INITIALS).flatMap(i -> Arrays.stream(FINALS).map(f -> i + f)).collect(Collectors.toList());
+        }
+
+        public static String randomName() {
+            return RandomSample.pick(names());
         }
     }
 

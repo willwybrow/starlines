@@ -2,8 +2,9 @@ package uk.wycor.starlines.web.filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -14,9 +15,10 @@ import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.StarlinesGame;
 
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.wycor.starlines.domain.UniverseManager.PlayerNameGenerator.randomName;
 
 @Order(-10)
 @Component
@@ -32,18 +34,41 @@ public class AuthenticationFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        // placeholder, test works good, replace with bearer tokens or something else fun
+        /* // placeholder, test works good, replace with bearer tokens or something else fun
         Player player = extractPlayerIDFromAuthorizationHeader(exchange);
         if (player == null) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             exchange.getResponse().getHeaders().put(HttpHeaders.WWW_AUTHENTICATE, Collections.singletonList("Basic"));
             return exchange.getResponse().setComplete();
-        }
+        }*/
+        Player player = extractPlayerIDFromCookieForTestingPurposes(exchange);
+        exchange.getResponse().addCookie(ResponseCookie.from("player_id", player.getId().toString()).build());
+        exchange.getResponse().addCookie(ResponseCookie.from("player_name", player.getName()).build());
+
         return starlinesGame.loadOrCreatePlayer(player)
                 .flatMap(p -> chain
                         .filter(exchange)
                         .contextWrite(Context.of(AUTHENTICATED_USER_CONTEXT_KEY, p))
                 );
+    }
+
+    private Player extractPlayerIDFromCookieForTestingPurposes(ServerWebExchange exchange) {
+        try {
+            return Optional.ofNullable(exchange.getRequest().getCookies().getFirst("player_id"))
+                            .map(HttpCookie::getValue)
+                            .map(UUID::fromString)
+                            .map(uuid -> new Player(
+                                    uuid,
+                                    Optional
+                                    .ofNullable(exchange.getRequest().getCookies().getFirst("player_name"))
+                                    .map(HttpCookie::getValue)
+                                            .orElse(randomName())
+                                    )
+                            )
+                    .orElseThrow(IllegalArgumentException::new);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return new Player(UUID.randomUUID(), randomName());
+        }
     }
 
     private Player extractPlayerIDFromAuthorizationHeader(ServerWebExchange exchange) {
