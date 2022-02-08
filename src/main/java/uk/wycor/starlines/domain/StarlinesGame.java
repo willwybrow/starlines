@@ -66,7 +66,8 @@ public class StarlinesGame {
     @Neo4jTransactional
     public Mono<Player> loadOrCreatePlayer(Player player) {
         return playerRepository
-                .findById(player.getId());
+                .findById(player.getId())
+                .switchIfEmpty(Mono.defer(() -> setUpNewPlayer(player)));
     }
 
     private Mono<Player> setUpNewPlayer(Player player) {
@@ -79,8 +80,10 @@ public class StarlinesGame {
         return Mono.fromSupplier(() -> cluster)
                 .map(Cluster::getStars)
                 .map(this::bestStar)
+                .doOnNext(bs -> logger.info(String.format("Picked best star %s (%s)", bs.getName(), bs.getId().toString())))
                 .map(bestStar -> buildInitialProbes(player, bestStar))
                 .flatMapMany(Flux::fromIterable)
+                .doOnNext(probe -> logger.info(String.format("Saving probe %s orbiting star %s (%s) in cluster %d", probe.getId().toString(), probe.getOrbiting().getName(), probe.getOrbiting().getId().toString(), probe.getOrbiting().getClusterNumber())))
                 .flatMap(probeRepository::save)
                 .then(Mono.fromSupplier(() -> player));
     }

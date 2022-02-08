@@ -14,5 +14,6 @@ import java.util.UUID;
 public class Probe extends Ship {
     public Probe(UUID id, Player owner, Star orbiting) {
         super(id, owner, orbiting);
+        this.orbiting.getProbesInOrbit().add(this);
     }
 }

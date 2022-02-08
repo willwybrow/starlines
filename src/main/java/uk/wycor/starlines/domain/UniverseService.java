@@ -39,7 +39,7 @@ public class UniverseService {
                 .map(StarfieldGenerator::generateRandomStarfield)
                 .doOnNext(stars -> logger.info(String.format("Generated %d new stars", stars.size())))
                 .flatMapMany(starRepository::saveAll)
-                .doOnNext(star -> logger.info(String.format("Saved star %s", star.getId().toString())))
+                .doOnNext(star -> logger.info(String.format("Saved star %s into cluster %d", star.getId().toString(), star.getClusterNumber())))
                 .collect(Collectors.toSet())
                 .doOnNext(stars -> logger.info(String.format("Saved %d new stars", stars.size())))
                 .map(stars -> new Cluster(clusterID, stars));

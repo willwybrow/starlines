@@ -2,9 +2,9 @@ package uk.wycor.starlines.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Transient;
@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -29,7 +28,7 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
 
 @Getter
 @Setter
-@NoArgsConstructor
+@AllArgsConstructor
 @SuperBuilder
 @JsonInclude(value = NON_NULL)
 @Node("Star")
@@ -51,31 +50,25 @@ public class Star extends GameObject {
     @JsonProperty
     private long stabilisation;
 
-
     @JsonProperty
     private long accumulatedInstability;
 
     @Relationship(type = "LINKED_TO", direction = INCOMING)
-    Set<Star> linkedFrom;
+    @Builder.Default
+    private Set<Star> linkedFrom = new HashSet<>();
 
     @Relationship(type = "LINKED_TO", direction = OUTGOING)
-    Set<Star> linkedTo;
+    @Builder.Default
+    private Set<Star> linkedTo = new HashSet<>();
 
     @Relationship(type = "ORBITING", direction = INCOMING)
-    @JsonProperty
     @Builder.Default
-    Set<Probe> probesInOrbit = new HashSet<>();
+    private Set<Probe> probesInOrbit = new HashSet<>();
 
-    public Star(UUID id, ClusterID clusterID, HexPoint coordinates, String name, long currentMass, long naturalMassCapacity, long stabilisation, long accumulatedInstability) {
-        super(id);
-        this.clusterID = clusterID;
-        this.coordinates = coordinates;
-        this.name = name;
-        this.currentMass = currentMass;
-        this.naturalMassCapacity = naturalMassCapacity;
-        this.stabilisation = stabilisation;
-        this.accumulatedInstability = accumulatedInstability;
+    public Star() {
         this.probesInOrbit = new HashSet<>();
+        this.linkedFrom = new HashSet<>();
+        this.linkedTo = new HashSet<>();
     }
 
     @JsonProperty("clusterNumber")

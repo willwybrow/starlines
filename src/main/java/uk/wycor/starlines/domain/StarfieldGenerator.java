@@ -4,8 +4,10 @@ import uk.wycor.starlines.RandomSample;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,7 +28,7 @@ public class StarfieldGenerator {
             .filter(hexPoint -> -(CLUSTER_SUBDIVISIONS / 2) <= hexPoint.s() && hexPoint.s() <= (CLUSTER_SUBDIVISIONS / 2))
             .toList();
 
-    static List<Star> generateRandomStarfield(ClusterID destinationCluster) {
+    static Set<Star> generateRandomStarfield(ClusterID destinationCluster) {
         Random random = new Random();
         var totalMassToDistribute = MASS_PER_NEW_CLUSTER;
         var newStarMasses = new ArrayList<Integer>();
@@ -41,13 +43,18 @@ public class StarfieldGenerator {
         return IntStream.range(0, newStarMasses.size())
                 .boxed()
                 .map(
-                        i -> new Star(
-                                UUID.randomUUID(),
-                                destinationCluster,
-                                randomPointsForNewStars.get(i),
-                                StarNameGenerator.randomName(),
-                                newStarMasses.get(i),
-                                (int) Math.round((float) newStarMasses.get(i) * 1.75), 0, 0)
-                ).collect(Collectors.toList());
+                        i ->  Star
+                                .builder()
+                                .id(UUID.randomUUID())
+                                .clusterID(destinationCluster)
+                                .coordinates(randomPointsForNewStars.get(i))
+                                .name(StarNameGenerator.randomName())
+                                .currentMass(newStarMasses.get(i))
+                                .naturalMassCapacity(Math.round((float) newStarMasses.get(i) * 1.75))
+                                .accumulatedInstability(0)
+                                .stabilisation(0)
+                                .probesInOrbit(new HashSet<>())
+                                .build()
+                ).collect(Collectors.toSet());
     }
 }

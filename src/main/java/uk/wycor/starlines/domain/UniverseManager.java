@@ -61,7 +61,7 @@ public class UniverseManager {
 //        );
     }
 
-    static class PlayerNameGenerator {
+    public static class PlayerNameGenerator {
         private static final String[] INITIALS = {
                 "B", "S", "W", "C", "Fr", "L"
         };
