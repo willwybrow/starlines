@@ -51,6 +51,7 @@ public class PlayerService {
     }
 
     private Mono<Player> setUpNewPlayer(Player player) {
+        logger.info(String.format("Player %s (%s) doesn't exist!", player.getName(), player.getId().toString()));
         return universeService
                 .expandUniverse()
                 .flatMap(cluster -> populateCluster(cluster, player));
@@ -65,7 +66,7 @@ public class PlayerService {
                 .flatMapMany(Flux::fromIterable)
                 .doOnNext(probe -> logger.info(String.format("Saving probe %s orbiting star %s (%s) in cluster %d", probe.getId().toString(), probe.getOrbiting().getName(), probe.getOrbiting().getId().toString(), probe.getOrbiting().getClusterNumber())))
                 .flatMap(probeRepository::save)
-                .then(Mono.fromSupplier(() -> player));
+                .then(Mono.defer(() -> Mono.just(player)));
     }
 
     private Star bestStar(Collection<Star> stars) {
@@ -73,7 +74,7 @@ public class PlayerService {
     }
 
     private Set<Probe> buildInitialProbes(Player owner, Star orbiting) {
-        logger.info("Generating new Probe for player " + owner.getName());
+        logger.info(String.format("Generating new probes for player %s (%s)", owner.getName(), owner.getId().toString()));
         return IntStream.range(0, 5).mapToObj(i -> new Probe(UUID.randomUUID(), owner, orbiting)).collect(Collectors.toSet());
     }
 

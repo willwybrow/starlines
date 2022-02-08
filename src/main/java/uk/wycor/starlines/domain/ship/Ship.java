@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
@@ -18,7 +17,6 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @JsonInclude(value = NON_NULL)
 @Node("Ship")
 public abstract class Ship extends GameObject {
@@ -29,6 +27,9 @@ public abstract class Ship extends GameObject {
     @Relationship(type = "ORBITING", direction = Relationship.Direction.OUTGOING)
     @JsonManagedReference
     protected Star orbiting;
+
+    public Ship() {
+    }
 
     public Ship(UUID id, Player owner, Star orbiting) {
         super(id);

@@ -6,22 +6,22 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.StarlinesGame;
+import uk.wycor.starlines.domain.TickService;
 
 @Component
 public class NextTickHeaderFilter implements WebFilter {
-    private final StarlinesGame starlinesGame;
+    private final TickService tickService;
 
     private final static String NEXT_TICK_HEADER_NAME = "Next-Tick";
 
     @Autowired
-    public NextTickHeaderFilter(StarlinesGame starlinesGame) {
-        this.starlinesGame = starlinesGame;
+    public NextTickHeaderFilter(TickService tickService) {
+        this.tickService = tickService;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        exchange.getResponse().getHeaders().set(NEXT_TICK_HEADER_NAME, starlinesGame.nextTick().toString());
+        exchange.getResponse().getHeaders().set(NEXT_TICK_HEADER_NAME, tickService.nextTick().toString());
         return chain
                 .filter(exchange);
     }

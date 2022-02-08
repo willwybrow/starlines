@@ -40,7 +40,7 @@ public class UniverseService {
     }
 
     @Neo4jTransactional
-    public Mono<Cluster> getCluster(ClusterID clusterID, StarlinesGame starlinesGame) {
+    public Mono<Cluster> getCluster(ClusterID clusterID) {
         return starRepository.findByClusterIDEquals(clusterID)
                 .doOnNext(star -> logger.info(String.format("Found star %s (%s) from db lookup ", star.getName(), star.getId().toString())))
                 .switchIfEmpty(Mono.defer(() -> {
@@ -51,7 +51,7 @@ public class UniverseService {
                 .map(stars -> new Cluster(clusterID.withNeighbours(), stars));
     }
 
-    public Flux<Cluster> getClusters(Set<ClusterID> clusterIDs, StarlinesGame starlinesGame) {
+    public Flux<Cluster> getClusters(Set<ClusterID> clusterIDs) {
         return starRepository.findByClusterIDIn(clusterIDs)
                 .collect(Collectors.groupingBy(Star::getClusterID, Collectors.toSet()))
                 .flatMapMany(map -> Flux.fromIterable(map.entrySet()))

@@ -8,26 +8,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import uk.wycor.starlines.domain.UniverseService;
 import uk.wycor.starlines.domain.star.Cluster;
 import uk.wycor.starlines.domain.star.ClusterID;
-import uk.wycor.starlines.domain.StarlinesGame;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class ClusterController {
-    private final StarlinesGame starlinesGame;
+    private final UniverseService universeService;
 
     @Autowired
-    ClusterController(StarlinesGame starlinesGame) {
-        this.starlinesGame = starlinesGame;
+    ClusterController(UniverseService universeService) {
+        this.universeService = universeService;
     }
 
     @GetMapping(
             path = "/api/cluster/{clusterNumber}", produces = APPLICATION_JSON_VALUE
     )
     public Mono<ResponseEntity<Cluster>> getCluster(@PathVariable("clusterNumber") Long clusterNumber) {
-        return starlinesGame.universeService.getCluster(new ClusterID(clusterNumber), starlinesGame)
+        return universeService.getCluster(new ClusterID(clusterNumber))
                         .map(cluster -> new ResponseEntity<>(cluster, new HttpHeaders(), HttpStatus.OK));
     }
 }

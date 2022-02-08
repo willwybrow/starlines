@@ -1,10 +1,12 @@
 package uk.wycor.starlines.domain.order;
 
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
 
+@Node("EstablishSelfAsHarvester")
 @SuperBuilder
-@Node("CloseStarline")
-public class CloseStarline extends OneTimeOrder {
-    /* Starline target; */
+@NoArgsConstructor
+public class EstablishSelfAsHarvester extends OneTimeOrder {
+
 }

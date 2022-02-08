@@ -6,14 +6,10 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
 
-@Node("RepeatableOrder")
+@Node("BuildProbe")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 @Setter
-public abstract class RepeatableOrder extends Order {
-    @Override
-    public boolean isRepeatable() {
-        return true;
-    }
+public class BuildProbe extends Build {
 }

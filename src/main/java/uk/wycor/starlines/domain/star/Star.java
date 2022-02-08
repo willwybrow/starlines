@@ -7,14 +7,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.neo4j.core.convert.ConvertWith;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import uk.wycor.starlines.domain.GameObject;
 import uk.wycor.starlines.domain.geometry.HexPoint;
+import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.ship.Probe;
 import uk.wycor.starlines.domain.ship.Ship;
+import uk.wycor.starlines.domain.ship.Stabiliser;
 import uk.wycor.starlines.persistence.neo4j.ClusterIDConverter;
 import uk.wycor.starlines.persistence.neo4j.HexPointConverter;
 
@@ -66,10 +69,23 @@ public class Star extends GameObject {
 
     @Relationship(type = "ORBITING", direction = INCOMING)
     @Builder.Default
+    @ReadOnlyProperty
     private Set<Probe> probesInOrbit = new HashSet<>();
+
+    @Relationship(type = "ORBITING", direction = INCOMING)
+    @Builder.Default
+    @ReadOnlyProperty
+    private Set<Harvester> harvestersInOrbit = new HashSet<>();
+
+    @Relationship(type = "ORBITING", direction = INCOMING)
+    @Builder.Default
+    @ReadOnlyProperty
+    private Set<Stabiliser> stabilisersInOrbit = new HashSet<>();
 
     public Star() {
         this.probesInOrbit = new HashSet<>();
+        this.harvestersInOrbit = new HashSet<>();
+        this.stabilisersInOrbit = new HashSet<>();
         this.linkedFrom = new HashSet<>();
         this.linkedTo = new HashSet<>();
     }
@@ -91,6 +107,7 @@ public class Star extends GameObject {
     }
 
     @JsonProperty("control")
+    @Transient
     public StarControl getStarControl() {
         return Optional.ofNullable(this.getProbesInOrbit())
                 .orElse(Collections.emptySet())

@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import uk.wycor.starlines.domain.UniverseService;
+import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.domain.star.Cluster;
 import uk.wycor.starlines.domain.star.ClusterID;
-import uk.wycor.starlines.domain.StarlinesGame;
-import uk.wycor.starlines.domain.geometry.HexPoint;
 
 import java.util.List;
 import java.util.Map;
@@ -22,11 +22,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class ClustersController {
-    private final StarlinesGame starlinesGame;
+    private final UniverseService universeService;
 
     @Autowired
-    public ClustersController(StarlinesGame starlinesGame) {
-        this.starlinesGame = starlinesGame;
+    public ClustersController(UniverseService universeService) {
+        this.universeService = universeService;
     }
 
     @GetMapping(
@@ -43,7 +43,7 @@ public class ClustersController {
                         .mapToObj(r -> new HexPoint(q, r))
                 ).map(ClusterID::new)
                 .collect(Collectors.toSet());
-        return starlinesGame.universeService.getClusters(clusterIDs, starlinesGame)
+        return universeService.getClusters(clusterIDs)
                 .collectMap(cluster -> cluster.getClusterID().getNumeric(), cluster -> cluster)
                 .map(cluster -> new ResponseEntity<>(cluster, new HttpHeaders(), HttpStatus.OK));
     }

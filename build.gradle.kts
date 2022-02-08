@@ -31,6 +31,8 @@ dependencies {
     // implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
 
     runtimeOnly("org.neo4j:neo4j-ogm-bolt-driver:$neo4jCoreVersion")
     runtimeOnly("org.neo4j:neo4j-ogm-bolt-native-types:$neo4jCoreVersion")

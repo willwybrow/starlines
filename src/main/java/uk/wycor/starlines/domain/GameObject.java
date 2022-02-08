@@ -29,7 +29,7 @@ public class GameObject {
     @JsonSerialize(using = UUIDSerializer.class)
     @JsonDeserialize(using = UUIDDeserializer.class)
     @JsonProperty
-    UUID id;
+    private UUID id;
 
     @Override
     public boolean equals(Object o) {
