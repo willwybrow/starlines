@@ -11,6 +11,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
+import reactor.util.context.ContextView;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.StarlinesGame;
 
@@ -42,14 +43,22 @@ public class AuthenticationFilter implements WebFilter {
             return exchange.getResponse().setComplete();
         }*/
         Player player = extractPlayerIDFromCookieForTestingPurposes(exchange);
-        exchange.getResponse().addCookie(ResponseCookie.from("player_id", player.getId().toString()).build());
-        exchange.getResponse().addCookie(ResponseCookie.from("player_name", player.getName()).build());
+        exchange
+                .getResponse()
+                .addCookie(ResponseCookie.from("player_id", player.getId().toString()).path("/").build());
+        exchange
+                .getResponse()
+                .addCookie(ResponseCookie.from("player_name", player.getName()).path("/").build());
 
         return starlinesGame.loadOrCreatePlayer(player)
                 .flatMap(p -> chain
                         .filter(exchange)
                         .contextWrite(Context.of(AUTHENTICATED_USER_CONTEXT_KEY, p))
                 );
+    }
+
+    public static Mono<Player> getFromContext(ContextView contextView) {
+        return Mono.defer(() -> Mono.just(contextView.get(AUTHENTICATED_USER_CONTEXT_KEY)));
     }
 
     private Player extractPlayerIDFromCookieForTestingPurposes(ServerWebExchange exchange) {

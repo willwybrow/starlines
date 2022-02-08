@@ -24,7 +24,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class ClustersController {
     private final StarlinesGame starlinesGame;
 
-
     @Autowired
     public ClustersController(StarlinesGame starlinesGame) {
         this.starlinesGame = starlinesGame;
@@ -33,7 +32,7 @@ public class ClustersController {
     @GetMapping(
             path = "/api/clusters/", produces = APPLICATION_JSON_VALUE
     )
-    public Mono<ResponseEntity<Map<Long, Cluster>>> getCluster(@RequestParam(name = "q") List<Long> qValues, @RequestParam(name="r") List<Long> rValues) {
+    public Mono<ResponseEntity<Map<Long, Cluster>>> getClusters(@RequestParam(name = "q") List<Long> qValues, @RequestParam(name="r") List<Long> rValues) {
         var qStatistics = qValues.stream().mapToLong(Long::longValue).summaryStatistics();
         var rStatistics = rValues.stream().mapToLong(Long::longValue).summaryStatistics();
         var clusterIDs = LongStream
