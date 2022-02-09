@@ -5,10 +5,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.ship.Harvester;
+import uk.wycor.starlines.domain.order.EstablishSelfAsHarvester;
+import uk.wycor.starlines.domain.order.Harvest;
+import uk.wycor.starlines.domain.order.Order;
 import uk.wycor.starlines.persistence.neo4j.GameStateRepository;
 import uk.wycor.starlines.persistence.neo4j.HarvesterRepository;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;
+import uk.wycor.starlines.persistence.neo4j.OrderRepository;
 import uk.wycor.starlines.persistence.neo4j.ProbeRepository;
 import uk.wycor.starlines.persistence.neo4j.StabiliserRepository;
 
@@ -16,6 +19,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
@@ -32,15 +36,17 @@ public class TickService {
     private final Clock clock;
     private final GameStateRepository gameStateRepository;
     private final OrderExecutingService orderExecutingService;
+    private final OrderRepository orderRepository;
     private final ProbeRepository probeRepository;
     private final HarvesterRepository harvesterRepository;
     private final StabiliserRepository stabiliserRepository;
 
     @Autowired
-    public TickService(Clock clock, GameStateRepository gameStateRepository, OrderExecutingService orderExecutingService, ProbeRepository probeRepository, HarvesterRepository harvesterRepository, StabiliserRepository stabiliserRepository) {
+    public TickService(Clock clock, GameStateRepository gameStateRepository, OrderExecutingService orderExecutingService, OrderRepository orderRepository, ProbeRepository probeRepository, HarvesterRepository harvesterRepository, StabiliserRepository stabiliserRepository) {
         this.clock = clock;
         this.gameStateRepository = gameStateRepository;
         this.orderExecutingService = orderExecutingService;
+        this.orderRepository = orderRepository;
         this.probeRepository = probeRepository;
         this.harvesterRepository = harvesterRepository;
         this.stabiliserRepository = stabiliserRepository;
@@ -97,12 +103,25 @@ public class TickService {
                         Instant tickToExecute = rollForwardOneTick(gameState.getExecutedTick());
                         logger.info("Placeholder for processing every star in the game. Wheeeeeee!!!");
                         logger.info("In real life you'd probably get multiple guys to do this in parallel per cluster");
-                        gameState.setExecutedTick(tickToExecute); // set because we're donezo
-                        return executeProbeEstablishmentOrders(tickToExecute)
+                        return executeAllOrdersAndRefreshRepeatable(tickToExecute)
                                 .then(Mono.defer(() -> markTickExecutionComplete(gameState, tickToExecute)));
+
                     } else {
                         return gameStateRepository.findById(gameState.getId());
                     }
+                });
+    }
+
+    private Flux<Order> executeAllOrdersAndRefreshRepeatable(Instant executionTick) {
+        return executeProbeEstablishmentOrders(executionTick)
+                .map(establishSelfAsHarvester -> (Order)establishSelfAsHarvester)
+                .mergeWith(executeHarvestOrders(executionTick))
+                .flatMap(order -> {
+                    if (order.isRepeatable()) {
+                        order.setScheduledFor(rollForwardOneTick(executionTick));
+                        return orderRepository.save(order);
+                    }
+                    return Mono.just(order);
                 });
     }
 
@@ -112,17 +131,29 @@ public class TickService {
                 .flatMap(gameStateRepository::save);
     }
 
-    private Flux<Harvester> executeProbeEstablishmentOrders(Instant forTick) {
+    private Predicate<Order> canExecuteOrder(Instant onThisTick) {
+        return order -> (order.getExecutedAt() == null || order.getExecutedAt().isBefore(onThisTick)) && order.getScheduledFor().equals(onThisTick);
+    }
+
+    private Flux<EstablishSelfAsHarvester> executeProbeEstablishmentOrders(Instant forTick) {
         return probeRepository
                 .findAll()
-                .flatMap(probe -> {
-                    return Flux.fromStream(probe
-                                    .getOrdersToEstablish()
-                                    .stream()
-                                    .filter(establishSelfAsHarvester -> establishSelfAsHarvester.getScheduledFor().equals(forTick))
-                            )
-                            .flatMap(establishSelfAsHarvester -> orderExecutingService.establishProbeAsHarvester(establishSelfAsHarvester, probe));
-                });
+                .flatMap(probe -> Mono.justOrEmpty(probe
+                                .getOrdersToEstablish()
+                                .stream()
+                                .filter(canExecuteOrder(forTick))
+                                .findFirst()
+                        )
+                        .flatMap(establishSelfAsHarvester -> orderExecutingService.establishProbeAsHarvester(forTick, establishSelfAsHarvester, probe)));
+    }
+
+    private Flux<Harvest> executeHarvestOrders(Instant forTick) {
+        return harvesterRepository
+                .findAll()
+                .flatMap(harvester -> Mono
+                        .justOrEmpty(harvester.getOrdersToHarvest().stream().filter(canExecuteOrder(forTick)).findFirst())
+                        .flatMap(harvest -> orderExecutingService.harvest(forTick, harvest, harvester))
+                );
     }
 
     private Mono<GameState> startGame(Instant previousTick) {

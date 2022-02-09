@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -39,6 +40,8 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
 @JsonInclude(value = NON_NULL)
 @Node("Star")
 public class Star extends GameObject {
+    private static Logger logger = Logger.getLogger(Star.class.getName());
+
     @ConvertWith(converter = ClusterIDConverter.class)
     private ClusterID clusterID;
 
@@ -104,6 +107,11 @@ public class Star extends GameObject {
 
     public void loseMass(long mass) {
         this.currentMass = Math.max(0, this.currentMass - mass);
+    }
+
+    public void harvestMass() {
+        logger.info(String.format("Increasing %s (%s)'s mass by one!", this.getName(), this.getId().toString()));
+        this.currentMass = Math.max(0, this.currentMass + 1);
     }
 
     @JsonProperty("control")

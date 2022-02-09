@@ -9,8 +9,10 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import uk.wycor.starlines.domain.GameObject;
 import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.order.Order;
 import uk.wycor.starlines.domain.star.Star;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -27,6 +29,10 @@ public abstract class Ship extends GameObject {
     @Relationship(type = "ORBITING", direction = Relationship.Direction.OUTGOING)
     @JsonManagedReference
     protected Star orbiting;
+
+    @Relationship(type = "ORDERED_TO", direction = Relationship.Direction.OUTGOING)
+    @JsonProperty
+    Set<Order> orders;
 
     public Ship() {
     }

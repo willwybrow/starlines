@@ -9,7 +9,6 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import uk.wycor.starlines.domain.Player;
 import uk.wycor.starlines.domain.order.EstablishSelfAsHarvester;
-import uk.wycor.starlines.domain.order.Order;
 import uk.wycor.starlines.domain.star.Star;
 
 import java.util.Set;
@@ -25,10 +24,6 @@ public class Probe extends Ship {
     @Relationship(type = "ORDERED_TO", direction = Relationship.Direction.OUTGOING)
     @JsonProperty
     Set<EstablishSelfAsHarvester> ordersToEstablish;
-
-    @Relationship(type = "ORDERED_TO", direction = Relationship.Direction.OUTGOING)
-    @JsonProperty
-    Set<Order> orders;
 
     public Probe(UUID id, Player owner, Star orbiting) {
         super(id, owner, orbiting);
