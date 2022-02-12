@@ -12,14 +12,14 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 import reactor.util.context.ContextView;
-import uk.wycor.starlines.domain.Player;
-import uk.wycor.starlines.domain.PlayerService;
+import uk.wycor.starlines.domain.player.Player;
+import uk.wycor.starlines.domain.player.PlayerService;
 
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.wycor.starlines.domain.UniverseManager.PlayerNameGenerator.randomName;
+import static uk.wycor.starlines.domain.player.PlayerNameGenerator.randomName;
 
 @Order(-10)
 @Component

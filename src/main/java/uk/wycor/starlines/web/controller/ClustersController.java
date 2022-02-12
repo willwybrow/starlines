@@ -1,9 +1,6 @@
 package uk.wycor.starlines.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,7 +29,7 @@ public class ClustersController {
     @GetMapping(
             path = "/api/clusters/", produces = APPLICATION_JSON_VALUE
     )
-    public Mono<ResponseEntity<Map<Long, Cluster>>> getClusters(@RequestParam(name = "q") List<Long> qValues, @RequestParam(name="r") List<Long> rValues) {
+    public Mono<Map<Long, Cluster>> getClusters(@RequestParam(name = "q") List<Long> qValues, @RequestParam(name="r") List<Long> rValues) {
         var qStatistics = qValues.stream().mapToLong(Long::longValue).summaryStatistics();
         var rStatistics = rValues.stream().mapToLong(Long::longValue).summaryStatistics();
         var clusterIDs = LongStream
@@ -44,7 +41,6 @@ public class ClustersController {
                 ).map(ClusterID::new)
                 .collect(Collectors.toSet());
         return universeService.getClusters(clusterIDs)
-                .collectMap(cluster -> cluster.getClusterID().getNumeric(), cluster -> cluster)
-                .map(cluster -> new ResponseEntity<>(cluster, new HttpHeaders(), HttpStatus.OK));
+                .collectMap(cluster -> cluster.getClusterID().getNumeric(), cluster -> cluster);
     }
 }

@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.Probe;
-import uk.wycor.starlines.persistence.neo4j.ProbeRepository;
 import uk.wycor.starlines.web.filter.AuthenticationFilter;
 
 import java.util.Set;
@@ -15,11 +14,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class ProbesController {
-    private final ProbeRepository probeRepository;
 
     @Autowired
-    public ProbesController(ProbeRepository probeRepository) {
-        this.probeRepository = probeRepository;
+    public ProbesController() {
     }
 
     @GetMapping(

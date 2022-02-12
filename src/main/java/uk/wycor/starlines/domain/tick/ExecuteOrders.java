@@ -1,6 +1,5 @@
 package uk.wycor.starlines.domain.tick;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.order.Order;
@@ -11,7 +10,6 @@ import java.time.Instant;
 public abstract class ExecuteOrders implements OnTickAction {
     protected OrderRepository orderRepository;
 
-    @Autowired
     public ExecuteOrders(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }

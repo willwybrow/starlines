@@ -1,9 +1,6 @@
 package uk.wycor.starlines.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,8 +23,7 @@ public class ClusterController {
     @GetMapping(
             path = "/api/cluster/{clusterNumber}", produces = APPLICATION_JSON_VALUE
     )
-    public Mono<ResponseEntity<Cluster>> getCluster(@PathVariable("clusterNumber") Long clusterNumber) {
-        return universeService.getCluster(new ClusterID(clusterNumber))
-                        .map(cluster -> new ResponseEntity<>(cluster, new HttpHeaders(), HttpStatus.OK));
+    public Mono<Cluster> getCluster(@PathVariable("clusterNumber") Long clusterNumber) {
+        return universeService.getCluster(new ClusterID(clusterNumber));
     }
 }

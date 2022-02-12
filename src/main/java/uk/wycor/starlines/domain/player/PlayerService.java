@@ -1,9 +1,10 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.player;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import uk.wycor.starlines.domain.UniverseService;
 import uk.wycor.starlines.domain.ship.Probe;
 import uk.wycor.starlines.domain.star.Cluster;
 import uk.wycor.starlines.domain.star.ClusterID;

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
-import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.order.BuildHarvester;
 import uk.wycor.starlines.domain.order.BuildProbe;
 import uk.wycor.starlines.domain.order.BuildStabiliser;

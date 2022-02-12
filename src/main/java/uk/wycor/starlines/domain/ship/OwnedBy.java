@@ -7,7 +7,7 @@ import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 import org.springframework.data.neo4j.core.schema.TargetNode;
 import uk.wycor.starlines.domain.GameObjectRelationship;
-import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.player.Player;
 
 @RelationshipProperties
 @Getter

@@ -2,7 +2,7 @@ package uk.wycor.starlines.persistence.neo4j;
 
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.stereotype.Repository;
-import uk.wycor.starlines.domain.Player;
+import uk.wycor.starlines.domain.player.Player;
 
 import java.util.UUID;
 
