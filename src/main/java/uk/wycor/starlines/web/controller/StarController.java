@@ -20,7 +20,6 @@ public class StarController {
 
     private final StarRepository starRepository;
 
-
     @Autowired
     StarController(StarRepository starRepository) {
         this.starRepository = starRepository;

@@ -7,6 +7,7 @@ import uk.wycor.starlines.domain.order.EstablishSelfAsHarvester;
 import uk.wycor.starlines.domain.order.Harvest;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.ship.Probe;
+import uk.wycor.starlines.domain.tick.TickService;
 import uk.wycor.starlines.persistence.neo4j.HarvesterRepository;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;
 import uk.wycor.starlines.persistence.neo4j.OrderRepository;

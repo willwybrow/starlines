@@ -57,7 +57,7 @@ public class Star extends GameObject {
     @JsonProperty
     private long currentMass;
     @JsonProperty
-    private long stabilisation;
+    private long stabilisation; // provided every tick by stabilisers executing the Stabilise order
 
     @JsonProperty
     private long accumulatedInstability;
@@ -101,12 +101,27 @@ public class Star extends GameObject {
 
     @JsonProperty("maximumMass")
     @Transient
-    public long getMaximumMass() {
+    public long calculateMaximumMass() {
         return this.getNaturalMassCapacity() + this.getStabilisation();
     }
 
     public void loseMass(long mass) {
         this.currentMass = Math.max(0, this.currentMass - mass);
+    }
+
+    public Star recalculateInstability() {
+        /*
+        For every unit mass this star is over its maximum, it accrues one unit of instability
+        For every unit of stabilisation in excess of its current mass, it loses one unit of instability
+         */
+        this.accumulatedInstability = Math.max(0,
+                this.accumulatedInstability + this.currentInstability()
+        );
+        return this;
+    }
+
+    private long currentInstability() {
+        return this.getCurrentMass() - this.calculateMaximumMass();
     }
 
     public void harvestMass() {
