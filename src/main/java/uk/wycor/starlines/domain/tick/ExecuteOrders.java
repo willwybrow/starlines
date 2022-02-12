@@ -2,7 +2,7 @@ package uk.wycor.starlines.domain.tick;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.order.Order;
+import uk.wycor.starlines.domain.ship.order.Order;
 import uk.wycor.starlines.persistence.neo4j.OrderRepository;
 
 import java.time.Instant;

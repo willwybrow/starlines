@@ -3,7 +3,7 @@ package uk.wycor.starlines.domain;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.order.EstablishSelfAsHarvester;
+import uk.wycor.starlines.domain.ship.order.EstablishSelfAsHarvester;
 import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.Probe;
 import uk.wycor.starlines.domain.tick.TickService;

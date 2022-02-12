@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain.order;
+package uk.wycor.starlines.domain.ship.order;
 
 import lombok.experimental.SuperBuilder;
 import uk.wycor.starlines.domain.star.Star;

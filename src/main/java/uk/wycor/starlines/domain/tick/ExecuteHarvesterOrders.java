@@ -4,11 +4,11 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.player.Player;
-import uk.wycor.starlines.domain.order.BuildHarvester;
-import uk.wycor.starlines.domain.order.BuildProbe;
-import uk.wycor.starlines.domain.order.BuildStabiliser;
-import uk.wycor.starlines.domain.order.Harvest;
-import uk.wycor.starlines.domain.order.Order;
+import uk.wycor.starlines.domain.ship.order.BuildHarvester;
+import uk.wycor.starlines.domain.ship.order.BuildProbe;
+import uk.wycor.starlines.domain.ship.order.BuildStabiliser;
+import uk.wycor.starlines.domain.ship.order.Harvest;
+import uk.wycor.starlines.domain.ship.order.Order;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.ship.Probe;
 import uk.wycor.starlines.domain.ship.Stabiliser;
@@ -51,7 +51,7 @@ public class ExecuteHarvesterOrders extends ExecuteOrders {
                 .concatWith(executeBuildStabiliserOrders(thisTick).map(order -> (Order)order));
     }
 
-    private Predicate<uk.wycor.starlines.domain.order.Order> canExecuteOrder(Instant onThisTick) {
+    private Predicate<Order> canExecuteOrder(Instant onThisTick) {
         return order -> (order.getExecutedAt() == null || order.getExecutedAt().isBefore(onThisTick)) && order.getScheduledFor().equals(onThisTick);
     }
 

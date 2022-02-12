@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain.order;
+package uk.wycor.starlines.domain.ship.order;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,10 +6,10 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
 
-@Node("Build")
+@Node("BuildHarvester")
 @SuperBuilder
 @NoArgsConstructor
 @Getter
 @Setter
-public abstract class Build extends RepeatableOrder {
+public class BuildHarvester extends Build {
 }

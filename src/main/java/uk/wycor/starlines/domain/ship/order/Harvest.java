@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain.order;
+package uk.wycor.starlines.domain.ship.order;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,11 +6,10 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
 
-@Node("EstablishSelfAsHarvester")
+@Node("Harvest")
 @SuperBuilder
-@NoArgsConstructor
 @Getter
 @Setter
-public class EstablishSelfAsHarvester extends OneTimeOrder {
-
+@NoArgsConstructor
+public class Harvest extends RepeatableOrder {
 }

@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain.order;
+package uk.wycor.starlines.domain.ship.order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
