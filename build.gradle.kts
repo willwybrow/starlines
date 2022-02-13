@@ -7,7 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 }
 
-group = "uk.wycor.starlines"
+group = "dev.wycobar.starlines"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -62,5 +62,5 @@ tasks.withType<Test> {
 }
 
 application {
-    mainClass.set("uk.wycor.starlines.web.WebServer")
+    mainClass.set("dev.wycobar.starlines.web.WebServer")
 }
