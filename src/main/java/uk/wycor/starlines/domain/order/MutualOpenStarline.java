@@ -1,7 +1,7 @@
 package uk.wycor.starlines.domain.order;
 
 import lombok.Getter;
-import uk.wycor.starlines.domain.ship.order.OpenStarline;
+import uk.wycor.starlines.domain.ship.order.starline.OpenStarline;
 
 import java.util.Objects;
 import java.util.Set;

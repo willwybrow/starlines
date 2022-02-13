@@ -7,9 +7,9 @@ import lombok.Setter;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import uk.wycor.starlines.domain.player.Player;
-import uk.wycor.starlines.domain.ship.order.CloseStarline;
+import uk.wycor.starlines.domain.ship.order.starline.CloseStarline;
 import uk.wycor.starlines.domain.ship.order.EstablishSelfAsHarvester;
-import uk.wycor.starlines.domain.ship.order.OpenStarline;
+import uk.wycor.starlines.domain.ship.order.starline.OpenStarline;
 import uk.wycor.starlines.domain.star.Star;
 
 import java.util.Set;

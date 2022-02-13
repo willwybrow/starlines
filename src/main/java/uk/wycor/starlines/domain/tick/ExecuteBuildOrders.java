@@ -4,14 +4,13 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.player.Player;
-import uk.wycor.starlines.domain.ship.order.BuildHarvester;
-import uk.wycor.starlines.domain.ship.order.BuildProbe;
-import uk.wycor.starlines.domain.ship.order.BuildStabiliser;
-import uk.wycor.starlines.domain.ship.order.Harvest;
-import uk.wycor.starlines.domain.ship.order.Order;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.ship.Probe;
 import uk.wycor.starlines.domain.ship.Stabiliser;
+import uk.wycor.starlines.domain.ship.order.unit.Build;
+import uk.wycor.starlines.domain.ship.order.unit.BuildHarvester;
+import uk.wycor.starlines.domain.ship.order.unit.BuildProbe;
+import uk.wycor.starlines.domain.ship.order.unit.BuildStabiliser;
 import uk.wycor.starlines.domain.star.Star;
 import uk.wycor.starlines.persistence.neo4j.HarvesterRepository;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;
@@ -22,20 +21,19 @@ import uk.wycor.starlines.persistence.neo4j.StarRepository;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 @Component
 @org.springframework.core.annotation.Order(1)
-public class ExecuteHarvesterOrders extends ExecuteOrders {
-    private static final Logger logger = Logger.getLogger(ExecuteHarvesterOrders.class.getName());
+public class ExecuteBuildOrders extends ExecuteOrders<Build> {
+    private static final Logger logger = Logger.getLogger(ExecuteBuildOrders.class.getName());
 
     private final HarvesterRepository harvesterRepository;
     private final ProbeRepository probeRepository;
     private final StabiliserRepository stabiliserRepository;
     private final StarRepository starRepository;
 
-    public ExecuteHarvesterOrders(OrderRepository orderRepository, HarvesterRepository harvesterRepository, ProbeRepository probeRepository, StabiliserRepository stabiliserRepository, StarRepository starRepository) {
+    public ExecuteBuildOrders(OrderRepository orderRepository, HarvesterRepository harvesterRepository, ProbeRepository probeRepository, StabiliserRepository stabiliserRepository, StarRepository starRepository) {
         super(orderRepository);
         this.harvesterRepository = harvesterRepository;
         this.probeRepository = probeRepository;
@@ -44,25 +42,10 @@ public class ExecuteHarvesterOrders extends ExecuteOrders {
     }
 
     @Override
-    public Flux<Order> executeOrders(Instant thisTick, Instant nextTick) {
-        return executeHarvestOrders(thisTick).map(harvest -> (Order)harvest)
-                .concatWith(executeBuildProbeOrders(thisTick).map(order -> (Order)order))
-                .concatWith(executeBuildHarvesterOrders(thisTick).map(order -> (Order)order))
-                .concatWith(executeBuildStabiliserOrders(thisTick).map(order -> (Order)order));
-    }
-
-    private Predicate<Order> canExecuteOrder(Instant onThisTick) {
-        return order -> (order.getExecutedAt() == null || order.getExecutedAt().isBefore(onThisTick)) && order.getScheduledFor().equals(onThisTick);
-    }
-
-    @Neo4jTransactional
-    private Flux<Harvest> executeHarvestOrders(Instant forTick) {
-        return harvesterRepository
-                .findAll()
-                .flatMap(harvester -> Mono
-                        .justOrEmpty(harvester.getOrdersToHarvest().stream().filter(canExecuteOrder(forTick)).findFirst())
-                        .flatMap(harvest -> harvest(forTick, harvest, harvester))
-                );
+    public Flux<Build> executeOrders(Instant thisTick, Instant nextTick) {
+        return executeBuildProbeOrders(thisTick).map(order -> (Build)order)
+                .concatWith(executeBuildHarvesterOrders(thisTick).map(order -> (Build)order))
+                .concatWith(executeBuildStabiliserOrders(thisTick).map(order -> (Build)order));
     }
 
     @Neo4jTransactional
@@ -95,16 +78,6 @@ public class ExecuteHarvesterOrders extends ExecuteOrders {
                 );
     }
 
-    private Mono<Harvest> harvest(Instant executionTick, Harvest order, Harvester harvester) {
-        logger.info(String.format("Harvester %s has an order to harvest!", harvester.getId().toString()));
-        Star orbiting = harvester.getOrbiting();
-        orbiting.harvestMass();
-        order.setExecutedAt(executionTick);
-        return starRepository.save(orbiting)
-                .then(orderRepository.save(order))
-                .then(Mono.just(order));
-    }
-
     private Mono<BuildProbe> buildProbe(Instant executionTick, BuildProbe order, Harvester harvester) {
         logger.info(String.format("Harvester %s has an order to build a probe!", harvester.getId().toString()));
         Star orbiting = harvester.getOrbiting();
@@ -123,7 +96,7 @@ public class ExecuteHarvesterOrders extends ExecuteOrders {
         Player owner = harvester.getOwner();
         Harvester newHarvester = new Harvester(UUID.randomUUID(), owner, orbiting);
         order.setExecutedAt(executionTick);
-        return harvesterRepository.save(harvester)
+        return harvesterRepository.save(newHarvester)
                 .then(starRepository.save(orbiting))
                 .then(orderRepository.save(order))
                 .then(Mono.just(order));

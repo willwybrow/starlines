@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.Probe;
+import uk.wycor.starlines.domain.ship.order.starline.OpenStarline;
 import uk.wycor.starlines.domain.star.Star;
 import uk.wycor.starlines.domain.tick.TickService;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;

@@ -35,6 +35,7 @@ public class TickService {
         this.clock = clock;
         this.gameStateRepository = gameStateRepository;
         this.onTickActions = onTickActions;
+        this.onTickActions.forEach(onTickAction -> logger.info(String.format("Registered OnTickAction handler %s", onTickAction.getClass().toString())));
     }
 
     public Instant nextTick() {
@@ -66,9 +67,7 @@ public class TickService {
         Instant previousTick = previousTick();
         checkAndExecuteTick(previousTick)
                 .subscribe(
-                        gameState -> {
-                            logger.info(String.format("Processed tick %s", gameState.getExecutedTick()));
-                        },
+                        gameState -> logger.info(String.format("Processed tick %s", gameState.getExecutedTick())),
                         throwable -> {
                             logger.warning("Failed to execute tick");
                             logger.log(Level.SEVERE, "Fucked up trying to execute the tick", throwable);

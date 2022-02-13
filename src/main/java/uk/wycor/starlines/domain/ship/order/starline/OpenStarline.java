@@ -1,4 +1,4 @@
-package uk.wycor.starlines.domain.ship.order;
+package uk.wycor.starlines.domain.ship.order.starline;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+import uk.wycor.starlines.domain.ship.order.OneTimeOrder;
 import uk.wycor.starlines.domain.star.Star;
 
 import java.util.UUID;

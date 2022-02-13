@@ -1,7 +1,7 @@
 package uk.wycor.starlines.domain.order;
 
 import org.junit.jupiter.api.Test;
-import uk.wycor.starlines.domain.ship.order.OpenStarline;
+import uk.wycor.starlines.domain.ship.order.starline.OpenStarline;
 
 import java.util.UUID;
 

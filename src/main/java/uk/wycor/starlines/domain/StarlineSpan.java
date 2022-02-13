@@ -9,6 +9,7 @@ import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 import org.springframework.data.neo4j.core.schema.TargetNode;
 import uk.wycor.starlines.domain.star.Star;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -28,7 +29,7 @@ public class StarlineSpan extends GameObjectRelationship {
 
     @Transient
     @JsonProperty
-    public UUID starID() {
-        return this.star.getId();
+    public Map<String, String> star() {
+        return Map.of("id", this.star.getId().toString(), "name", this.star.getName());
     }
 }

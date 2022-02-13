@@ -6,14 +6,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uk.wycor.starlines.domain.StarlineSpan;
 import uk.wycor.starlines.domain.order.MutualOpenStarline;
-import uk.wycor.starlines.domain.player.Player;
-import uk.wycor.starlines.domain.ship.Harvester;
-import uk.wycor.starlines.domain.ship.Probe;
-import uk.wycor.starlines.domain.ship.order.EstablishSelfAsHarvester;
-import uk.wycor.starlines.domain.ship.order.OpenStarline;
-import uk.wycor.starlines.domain.ship.order.Order;
+import uk.wycor.starlines.domain.ship.order.starline.OpenStarline;
 import uk.wycor.starlines.domain.star.Star;
-import uk.wycor.starlines.persistence.neo4j.HarvesterRepository;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;
 import uk.wycor.starlines.persistence.neo4j.OrderRepository;
 import uk.wycor.starlines.persistence.neo4j.ProbeRepository;
@@ -24,39 +18,29 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Component
 @org.springframework.core.annotation.Order(5)
-public class ExecuteProbeOrders extends ExecuteOrders {
-    private static final Logger logger = Logger.getLogger(ExecuteProbeOrders.class.getName());
+public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
+    private static final Logger logger = Logger.getLogger(ExecuteOpenStarlineOrders.class.getName());
 
     private final ProbeRepository probeRepository;
-    private final HarvesterRepository harvesterRepository;
     private final StarRepository starRepository;
 
     @Autowired
-    public ExecuteProbeOrders(OrderRepository orderRepository,
-                              ProbeRepository probeRepository,
-                              HarvesterRepository harvesterRepository,
-                              StarRepository starRepository) {
+    public ExecuteOpenStarlineOrders(OrderRepository orderRepository,
+                                     ProbeRepository probeRepository,
+                                     StarRepository starRepository) {
         super(orderRepository);
         this.probeRepository = probeRepository;
-        this.harvesterRepository = harvesterRepository;
         this.starRepository = starRepository;
     }
 
     @Override
-    public Flux<Order> executeOrders(Instant thisTick, Instant nextTick) {
-        return executeProbeEstablishmentOrders(thisTick)
-                .map(establishSelfAsHarvester -> (Order) establishSelfAsHarvester)
-                .concatWith(executeOpenStarlineOrders(thisTick));
-    }
-
-    private Predicate<Order> canExecuteOrder(Instant onThisTick) {
-        return order -> (order.getExecutedAt() == null || order.getExecutedAt().isBefore(onThisTick)) && order.getScheduledFor().equals(onThisTick);
+    public Flux<OpenStarline> executeOrders(Instant thisTick, Instant nextTick) {
+        return executeOpenStarlineOrders(thisTick);
     }
 
     @Neo4jTransactional
@@ -179,31 +163,5 @@ public class ExecuteProbeOrders extends ExecuteOrders {
                 .starlineID(UUID.randomUUID())
                 .star(toStar)
                 .sequesteredMass(starlineMassCost).build();
-    }
-
-    @Neo4jTransactional
-    private Flux<EstablishSelfAsHarvester> executeProbeEstablishmentOrders(Instant forTick) {
-        return probeRepository
-                .findAll()
-                .flatMap(probe -> Mono.justOrEmpty(probe
-                                .getOrdersToEstablish()
-                                .stream()
-                                .filter(canExecuteOrder(forTick))
-                                .findFirst()
-                        )
-                        .flatMap(establishSelfAsHarvester -> establishProbeAsHarvester(forTick, establishSelfAsHarvester, probe)));
-    }
-
-    private Mono<EstablishSelfAsHarvester> establishProbeAsHarvester(Instant executionTick, EstablishSelfAsHarvester order, Probe probe) {
-        logger.info(String.format("Probe %s has an outstanding order to establish itself as a Harvester", probe.getId().toString()));
-        Star orbiting = probe.getOrbiting();
-        Player owner = probe.getOwner();
-        Harvester harvester = new Harvester(probe.getId(), owner, orbiting);
-        orbiting.getProbesInOrbit().remove(probe);
-        order.setExecutedAt(executionTick);
-        return harvesterRepository.save(harvester)
-                .then(orderRepository.save(order))
-                .then(probeRepository.deleteById(probe.getId()))
-                .then(Mono.just(order));
     }
 }

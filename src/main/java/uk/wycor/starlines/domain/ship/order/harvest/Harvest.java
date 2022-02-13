@@ -1,15 +1,16 @@
-package uk.wycor.starlines.domain.ship.order;
+package uk.wycor.starlines.domain.ship.order.harvest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.Node;
+import uk.wycor.starlines.domain.ship.order.RepeatableOrder;
 
-@Node("BuildStabiliser")
+@Node("Harvest")
 @SuperBuilder
-@NoArgsConstructor
 @Getter
 @Setter
-public class BuildStabiliser extends Build {
+@NoArgsConstructor
+public class Harvest extends RepeatableOrder {
 }
