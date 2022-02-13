@@ -29,16 +29,16 @@ public class ProbeOrderController {
     }
 
     @PostMapping(
-            path = "/api/ships/my/probes/{probeID}/orders/establish-as-harvester",
+            path = "/api/ships/my/probes/{probeID}/orders/deploy-harvester",
             produces = APPLICATION_JSON_VALUE
     )
-    public Mono<Probe> orderProbeToEstablishAsHarvester(@PathVariable("probeID") UUID probeID) {
+    public Mono<Probe> orderProbeToDeployHarvester(@PathVariable("probeID") UUID probeID) {
         return Mono
                 .deferContextual(AuthenticationFilter::getFromContext)
                 .flatMap(player ->
                         probeRepository
                                 .findById(probeID)
-                                .flatMap(probe -> probeOrders.orderProbeToEstablishSelf(player, probe))
+                                .flatMap(probe -> probeOrders.orderProbeToDeploy(player, probe))
                 );
     }
 

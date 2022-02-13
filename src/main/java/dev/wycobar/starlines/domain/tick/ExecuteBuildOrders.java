@@ -42,7 +42,7 @@ public class ExecuteBuildOrders extends ExecuteOrders<Build> {
     }
 
     @Override
-    public Flux<Build> executeOrders(Instant thisTick, Instant nextTick) {
+    public Flux<Build> executeOrders(Instant thisTick) {
         return executeBuildProbeOrders(thisTick).map(order -> (Build)order)
                 .concatWith(executeBuildHarvesterOrders(thisTick).map(order -> (Build)order))
                 .concatWith(executeBuildStabiliserOrders(thisTick).map(order -> (Build)order));

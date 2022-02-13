@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import dev.wycobar.starlines.domain.StarlineSpan;
 import dev.wycobar.starlines.domain.order.MutualOpenStarline;
-import dev.wycobar.starlines.domain.ship.order.starline.OpenStarline;
+import dev.wycobar.starlines.domain.ship.order.starline.OpenStarlineOrder;
 import dev.wycobar.starlines.domain.star.Star;
 import dev.wycobar.starlines.persistence.neo4j.Neo4jTransactional;
 import dev.wycobar.starlines.persistence.neo4j.OrderRepository;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Component
 @org.springframework.core.annotation.Order(5)
-public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
+public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarlineOrder> {
     private static final Logger logger = Logger.getLogger(ExecuteOpenStarlineOrders.class.getName());
 
     private final ProbeRepository probeRepository;
@@ -39,12 +39,12 @@ public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
     }
 
     @Override
-    public Flux<OpenStarline> executeOrders(Instant thisTick, Instant nextTick) {
+    public Flux<OpenStarlineOrder> executeOrders(Instant thisTick) {
         return executeOpenStarlineOrders(thisTick);
     }
 
     @Neo4jTransactional
-    private Flux<OpenStarline> executeOpenStarlineOrders(Instant forTick) {
+    private Flux<OpenStarlineOrder> executeOpenStarlineOrders(Instant forTick) {
         logger.info("Time to execute Open Starline orders, yay!");
         return probeRepository
                 .findAll()
@@ -57,10 +57,10 @@ public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
                 ).collect(Collectors.toSet())
                 .flatMapMany(set -> {
                     final Set<MutualOpenStarline> mutualOrders = new HashSet<>();
-                    final Set<OpenStarline> standaloneOrders = new HashSet<>();
+                    final Set<OpenStarlineOrder> standaloneOrders = new HashSet<>();
 
                     set.forEach(openStarline -> {
-                        Optional<OpenStarline> mutualOrder = set.stream().filter(order -> order.getOrderGivenTo().getOrbiting().equals(openStarline.getTarget())).findFirst();
+                        Optional<OpenStarlineOrder> mutualOrder = set.stream().filter(order -> order.getOrderGivenTo().getOrbiting().equals(openStarline.getTarget())).findFirst();
                         if (mutualOrder.isPresent()) {
                             // then it is a mutual
                             logger.info("Found a matching order from the other star");
@@ -105,18 +105,18 @@ public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
                 .then(Mono.defer(() -> Mono.just(mutualOpenStarline)));
     }
 
-    private Mono<OpenStarline> openStarlineUnilaterally(
+    private Mono<OpenStarlineOrder> openStarlineUnilaterally(
             Instant executionTick,
-            OpenStarline openStarline
+            OpenStarlineOrder openStarlineOrder
     ) {
-        Star fromStar = openStarline.getOrderGivenTo().getOrbiting();
-        Star toStar = openStarline.getTarget();
+        Star fromStar = openStarlineOrder.getOrderGivenTo().getOrbiting();
+        Star toStar = openStarlineOrder.getTarget();
 
         logger.info(String.format("Processing order to unilaterally open a starline from %s (%s) to %s (%s)", fromStar.getName(), fromStar.getId().toString(), toStar.getName(), toStar.getId().toString()));
 
         if (starlineSpanAlreadyExists(fromStar, toStar)) {
             logger.info("Seems this span of starline already exists");
-            return Mono.just(openStarline);
+            return Mono.just(openStarlineOrder);
         }
 
         var starlineLeg = validateRequirements(fromStar, toStar);
@@ -124,7 +124,7 @@ public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
         fromStar.loseMass(starlineLeg.getSequesteredMass());
 
         fromStar.getLinkedTo().add(starlineLeg);
-        openStarline.setExecutedAt(executionTick);
+        openStarlineOrder.setExecutedAt(executionTick);
         logger.info(String.format("Star %s (%s) should now be persisted with a link to star %s (%s) (seqmass: %d)",
                 fromStar.getName(),
                 fromStar.getId().toString(),
@@ -132,10 +132,10 @@ public class ExecuteOpenStarlineOrders extends ExecuteOrders<OpenStarline> {
                 fromStar.getLinkedTo().stream().findFirst().orElseThrow().getStar().getId().toString(),
                 fromStar.getLinkedTo().stream().findFirst().orElseThrow().getSequesteredMass()
                 ));
-        return orderRepository.save(openStarline)
+        return orderRepository.save(openStarlineOrder)
                 .then(starRepository.save(toStar))
                 .then(starRepository.save(fromStar).doOnNext(star -> logger.info(String.format("Star %s saved with linkTo ID %d", star.getId(), star.getLinkedTo().stream().findFirst().map(StarlineSpan::getId).orElse(-1L)))))
-                .then(Mono.defer(() -> Mono.just(openStarline)));
+                .then(Mono.defer(() -> Mono.just(openStarlineOrder)));
     }
 
     private boolean starlineSpanAlreadyExists(Star fromStar, Star toStar) {

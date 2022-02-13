@@ -32,7 +32,7 @@ public class ExecuteHarvestOrders extends ExecuteOrders<Harvest> {
 
     @Neo4jTransactional
     @Override
-    public Flux<Harvest> executeOrders(Instant forTick, Instant nextTick) {
+    public Flux<Harvest> executeOrders(Instant forTick) {
         return harvesterRepository
                 .findAll()
                 .flatMap(harvester -> Mono

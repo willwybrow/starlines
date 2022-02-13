@@ -6,6 +6,6 @@ import dev.wycobar.starlines.domain.ship.order.OneTimeOrder;
 
 @SuperBuilder
 @Node("CloseStarline")
-public class CloseStarline extends OneTimeOrder {
+public class CloseStarlineOrder extends OneTimeOrder {
     /* Starline target; */
 }

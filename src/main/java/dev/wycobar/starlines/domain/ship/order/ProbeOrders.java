@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import dev.wycobar.starlines.domain.player.Player;
 import dev.wycobar.starlines.domain.ship.Probe;
-import dev.wycobar.starlines.domain.ship.order.starline.OpenStarline;
+import dev.wycobar.starlines.domain.ship.order.starline.OpenStarlineOrder;
 import dev.wycobar.starlines.domain.star.Star;
 import dev.wycobar.starlines.domain.tick.TickService;
 import dev.wycobar.starlines.persistence.neo4j.Neo4jTransactional;
@@ -29,17 +29,17 @@ public class ProbeOrders {
     }
 
     @Neo4jTransactional
-    public Mono<Probe> orderProbeToEstablishSelf(Player player, Probe proposedProbe) {
+    public Mono<Probe> orderProbeToDeploy(Player player, Probe proposedProbe) {
         return verifyProbeOwnership(player, proposedProbe)
                 .flatMap(allowedProbe -> {
-                    EstablishSelfAsHarvester order = EstablishSelfAsHarvester
+                    DeployHarvesterOrder order = DeployHarvesterOrder
                             .builder()
                             .id(UUID.randomUUID())
                             .scheduledFor(tickService.nextTick())
                             .executedAt(null)
                             .orderGivenTo(allowedProbe)
                             .build();
-                    allowedProbe.setOrdersToEstablish(Set.of(order));
+                    allowedProbe.setOrdersToDeploy(Set.of(order));
                     return orderRepository
                             .save(order)
                             .flatMap(o -> probeRepository.save(allowedProbe));
@@ -50,7 +50,7 @@ public class ProbeOrders {
     public Mono<Probe> orderProbeToOpenStarline(Player player, Probe proposedProbe, Star destinationStar) {
         return verifyProbeOwnership(player, proposedProbe)
                 .flatMap(allowedProbe -> {
-                    OpenStarline order = OpenStarline
+                    OpenStarlineOrder order = OpenStarlineOrder
                             .builder()
                             .id(UUID.randomUUID())
                             .scheduledFor(tickService.nextTick())

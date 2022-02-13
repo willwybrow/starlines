@@ -2,6 +2,15 @@ package dev.wycobar.starlines.domain.star;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.wycobar.starlines.domain.GameObject;
+import dev.wycobar.starlines.domain.StarlineSpan;
+import dev.wycobar.starlines.domain.geometry.HexPoint;
+import dev.wycobar.starlines.domain.ship.Harvester;
+import dev.wycobar.starlines.domain.ship.Probe;
+import dev.wycobar.starlines.domain.ship.Ship;
+import dev.wycobar.starlines.domain.ship.Stabiliser;
+import dev.wycobar.starlines.persistence.neo4j.ClusterIDConverter;
+import dev.wycobar.starlines.persistence.neo4j.HexPointConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,22 +21,12 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.neo4j.core.convert.ConvertWith;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
-import dev.wycobar.starlines.domain.GameObject;
-import dev.wycobar.starlines.domain.StarlineSpan;
-import dev.wycobar.starlines.domain.geometry.HexPoint;
-import dev.wycobar.starlines.domain.ship.Harvester;
-import dev.wycobar.starlines.domain.ship.Probe;
-import dev.wycobar.starlines.domain.ship.Ship;
-import dev.wycobar.starlines.domain.ship.Stabiliser;
-import dev.wycobar.starlines.persistence.neo4j.ClusterIDConverter;
-import dev.wycobar.starlines.persistence.neo4j.HexPointConverter;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -73,16 +72,6 @@ public class Star extends GameObject {
     @Builder.Default
     @JsonProperty
     private Set<StarlineSpan> linkedTo = new HashSet<>();
-
-    @JsonProperty
-    public Set<String> linkedToStars() {
-        return linkedTo.stream().map(StarlineSpan::getStar).map(Star::getId).map(UUID::toString).collect(Collectors.toSet());
-    }
-
-    @JsonProperty
-    public Set<String> linkedFromStars() {
-        return linkedFrom.stream().map(StarlineSpan::getStar).map(Star::getId).map(UUID::toString).collect(Collectors.toSet());
-    }
 
     @Relationship(type = "ORBITING", direction = INCOMING)
     @Builder.Default

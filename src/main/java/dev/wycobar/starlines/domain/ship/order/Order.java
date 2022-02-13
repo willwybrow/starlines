@@ -36,4 +36,11 @@ public abstract class Order extends GameObject {
 
     @JsonProperty
     public abstract boolean isRepeatable();
+
+    public Order reschedule(Instant at) {
+        if (isRepeatable()) {
+            this.setScheduledFor(at);
+        }
+        return this;
+    }
 }

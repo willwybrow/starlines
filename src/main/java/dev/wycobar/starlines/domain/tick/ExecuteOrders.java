@@ -17,7 +17,7 @@ public abstract class ExecuteOrders<T extends Order> implements OnTickAction {
 
     @Override
     public final Flux<Void> processActions(Instant thisTick, Instant nextTick) {
-        return executeOrders(thisTick, nextTick)
+        return executeOrders(thisTick)
             .flatMap(order -> {
                 if (order.isRepeatable()) {
                     order.setScheduledFor(nextTick);
@@ -27,7 +27,7 @@ public abstract class ExecuteOrders<T extends Order> implements OnTickAction {
             });
     }
 
-    abstract Flux<T> executeOrders(Instant thisTick, Instant nextTick);
+    abstract Flux<T> executeOrders(Instant thisTick);
 
     Predicate<Order> canExecuteOrder(Instant onThisTick) {
         return order -> (order.getExecutedAt() == null || order.getExecutedAt().isBefore(onThisTick)) && order.getScheduledFor().equals(onThisTick);

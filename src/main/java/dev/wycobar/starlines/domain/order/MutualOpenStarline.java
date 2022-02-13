@@ -1,7 +1,7 @@
 package dev.wycobar.starlines.domain.order;
 
 import lombok.Getter;
-import dev.wycobar.starlines.domain.ship.order.starline.OpenStarline;
+import dev.wycobar.starlines.domain.ship.order.starline.OpenStarlineOrder;
 
 import java.util.Objects;
 import java.util.Set;
@@ -9,19 +9,19 @@ import java.util.stream.Stream;
 
 @Getter
 public class MutualOpenStarline {
-    OpenStarline a;
-    OpenStarline b;
+    OpenStarlineOrder a;
+    OpenStarlineOrder b;
 
-    public MutualOpenStarline(OpenStarline a, OpenStarline b) {
+    public MutualOpenStarline(OpenStarlineOrder a, OpenStarlineOrder b) {
         this.a = a;
         this.b = b;
     }
 
-    public Stream<OpenStarline> stream() {
+    public Stream<OpenStarlineOrder> stream() {
         return this.asSet().stream();
     }
 
-    private Set<OpenStarline> asSet() {
+    private Set<OpenStarlineOrder> asSet() {
         return Set.of(a, b);
     }
 
