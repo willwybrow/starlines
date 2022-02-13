@@ -1,12 +1,8 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.ship.order;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.ship.order.BuildHarvester;
-import uk.wycor.starlines.domain.ship.order.BuildProbe;
-import uk.wycor.starlines.domain.ship.order.BuildStabiliser;
-import uk.wycor.starlines.domain.ship.order.Harvest;
 import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.tick.TickService;

@@ -13,6 +13,7 @@ import org.springframework.data.neo4j.core.convert.ConvertWith;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import uk.wycor.starlines.domain.GameObject;
+import uk.wycor.starlines.domain.StarlineSpan;
 import uk.wycor.starlines.domain.geometry.HexPoint;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.domain.ship.Probe;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -64,11 +66,23 @@ public class Star extends GameObject {
 
     @Relationship(type = "LINKED_TO", direction = INCOMING)
     @Builder.Default
-    private Set<Star> linkedFrom = new HashSet<>();
+    @ReadOnlyProperty
+    private Set<StarlineSpan> linkedFrom = new HashSet<>();
 
     @Relationship(type = "LINKED_TO", direction = OUTGOING)
     @Builder.Default
-    private Set<Star> linkedTo = new HashSet<>();
+    @JsonProperty
+    private Set<StarlineSpan> linkedTo = new HashSet<>();
+
+    @JsonProperty
+    public Set<String> linkedToStars() {
+        return linkedTo.stream().map(StarlineSpan::getStar).map(Star::getId).map(UUID::toString).collect(Collectors.toSet());
+    }
+
+    @JsonProperty
+    public Set<String> linkedFromStars() {
+        return linkedFrom.stream().map(StarlineSpan::getStar).map(Star::getId).map(UUID::toString).collect(Collectors.toSet());
+    }
 
     @Relationship(type = "ORBITING", direction = INCOMING)
     @Builder.Default

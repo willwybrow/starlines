@@ -1,17 +1,17 @@
-package uk.wycor.starlines.domain;
+package uk.wycor.starlines.domain.ship.order;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.ship.order.EstablishSelfAsHarvester;
 import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.Probe;
+import uk.wycor.starlines.domain.star.Star;
 import uk.wycor.starlines.domain.tick.TickService;
 import uk.wycor.starlines.persistence.neo4j.Neo4jTransactional;
 import uk.wycor.starlines.persistence.neo4j.OrderRepository;
 import uk.wycor.starlines.persistence.neo4j.ProbeRepository;
 
-import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -38,11 +38,29 @@ public class ProbeOrders {
                             .executedAt(null)
                             .orderGivenTo(allowedProbe)
                             .build();
-                    allowedProbe.getOrdersToEstablish().add(order);
-                    allowedProbe.getOrdersToEstablish().retainAll(Collections.singleton(order));
+                    allowedProbe.setOrdersToEstablish(Set.of(order));
                     return orderRepository
                             .save(order)
                             .flatMap(o -> probeRepository.save(allowedProbe));
+                });
+    }
+
+    @Neo4jTransactional
+    public Mono<Probe> orderProbeToOpenStarline(Player player, Probe proposedProbe, Star destinationStar) {
+        return verifyProbeOwnership(player, proposedProbe)
+                .flatMap(allowedProbe -> {
+                    OpenStarline order = OpenStarline
+                            .builder()
+                            .id(UUID.randomUUID())
+                            .scheduledFor(tickService.nextTick())
+                            .executedAt(null)
+                            .orderGivenTo(allowedProbe)
+                            .target(destinationStar)
+                            .build();
+                    allowedProbe.setOrdersToOpenStarline(Set.of(order));
+                    return orderRepository
+                            .save(order)
+                            .then(probeRepository.save(allowedProbe));
                 });
     }
 

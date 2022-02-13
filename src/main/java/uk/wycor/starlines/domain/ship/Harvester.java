@@ -8,6 +8,7 @@ import uk.wycor.starlines.domain.player.Player;
 import uk.wycor.starlines.domain.ship.order.BuildHarvester;
 import uk.wycor.starlines.domain.ship.order.BuildProbe;
 import uk.wycor.starlines.domain.ship.order.BuildStabiliser;
+import uk.wycor.starlines.domain.ship.order.CloseStarline;
 import uk.wycor.starlines.domain.ship.order.Harvest;
 import uk.wycor.starlines.domain.star.Star;
 
@@ -30,6 +31,9 @@ public class Harvester extends Ship {
 
     @Relationship(type = "ORDERED_TO", direction = Relationship.Direction.OUTGOING)
     Set<Harvest> ordersToHarvest;
+
+    @Relationship(type = "ORDERED_TO", direction = Relationship.Direction.OUTGOING)
+    Set<CloseStarline> ordersToCloseStarline;
 
     public Harvester() {
     }

@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.neo4j.core.schema.RelationshipId;
 import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 
@@ -15,8 +15,8 @@ import org.springframework.data.neo4j.core.schema.RelationshipProperties;
 @RelationshipProperties
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public abstract class GameObjectRelationship {
-    @GeneratedValue
     @RelationshipId
     Long id;
 

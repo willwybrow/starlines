@@ -17,4 +17,6 @@ public interface StarRepository extends ReactiveNeo4jRepository<Star, UUID> {
     Flux<Star> findByClusterIDIn(Set<ClusterID> clusterIDs);
 
     Mono<Star> findFirstByOrderByClusterIDDesc();
+
+    Flux<Star> findByLinkedToStarlineID(UUID starlineID);
 }

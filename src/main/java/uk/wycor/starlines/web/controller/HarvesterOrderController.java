@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import uk.wycor.starlines.domain.HarvesterOrders;
+import uk.wycor.starlines.domain.ship.order.HarvesterOrders;
 import uk.wycor.starlines.domain.ship.Harvester;
 import uk.wycor.starlines.persistence.neo4j.HarvesterRepository;
 import uk.wycor.starlines.web.filter.AuthenticationFilter;
